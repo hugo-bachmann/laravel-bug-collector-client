@@ -13,7 +13,8 @@ class BugCollectorServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/bug-collector.php', 'bug-collector');
 
-        // TODO: enregistrer le client HTTP / transport (à concevoir).
+        // L'Outbox est partagé (singleton) entre les reporters et le flush.
+        $this->app->singleton(\BugCollector\Client\Outbox::class);
     }
 
     /**

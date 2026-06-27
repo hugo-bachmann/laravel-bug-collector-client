@@ -32,5 +32,9 @@ class Registrar
 
         $events->listen(\Illuminate\Console\Events\CommandStarting::class, [CommandTiming::class, 'starting']);
         $events->listen(\Illuminate\Console\Events\CommandFinished::class, [CommandTiming::class, 'finished']);
+
+        $events->listen(\Illuminate\Queue\Events\JobProcessing::class, [JobTiming::class, 'processing']);
+        $events->listen(\Illuminate\Queue\Events\JobProcessed::class, [JobTiming::class, 'processed']);
+        $events->listen(\Illuminate\Queue\Events\JobFailed::class, [JobTiming::class, 'failed']);
     }
 }

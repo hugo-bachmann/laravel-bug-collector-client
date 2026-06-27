@@ -30,4 +30,11 @@ class PerfPayloadTest extends TestCase
 
         $this->assertNull($payload['context']);
     }
+
+    public function test_clamps_negative_duration_to_zero(): void
+    {
+        $payload = PerfPayload::make('query', 'select 1', -100);
+
+        $this->assertSame(0, $payload['duration_ms']);
+    }
 }

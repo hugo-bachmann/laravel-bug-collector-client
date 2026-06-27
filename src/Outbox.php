@@ -9,11 +9,33 @@ class Outbox
     /** @var array<int, array{path: string, payload: array<string, mixed>}> */
     private array $pending = [];
 
+    /** @var array<string, true> */
+    private array $seenKeys = [];
+
+    public function __construct(private int $maxEntries = 100) {}
+
     /**
      * @param  array<string, mixed>  $payload
      */
     public function record(string $path, array $payload): void
     {
+        if (isset($payload['kind'], $payload['label'])) {
+            $key = "{$path}|{$payload['kind']}|{$payload['label']}";
+        } elseif (isset($payload['message'])) {
+            $key = "{$path}|{$payload['message']}|".($payload['file'] ?? '').'|'.($payload['line'] ?? '');
+        } else {
+            $key = $path.'|'.md5(serialize($payload));
+        }
+
+        if (isset($this->seenKeys[$key])) {
+            return;
+        }
+
+        if (count($this->pending) >= $this->maxEntries) {
+            return;
+        }
+
+        $this->seenKeys[$key] = true;
         $this->pending[] = ['path' => $path, 'payload' => $payload];
     }
 
@@ -21,6 +43,7 @@ class Outbox
     {
         $items = $this->pending;
         $this->pending = [];
+        $this->seenKeys = [];
 
         foreach ($items as $item) {
             $transport->send($item['path'], $item['payload']);

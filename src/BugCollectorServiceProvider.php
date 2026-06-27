@@ -24,7 +24,9 @@ class BugCollectorServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/bug-collector.php', 'bug-collector');
 
         $this->app->singleton(Gate::class);
-        $this->app->singleton(Outbox::class);
+        $this->app->singleton(Outbox::class, function ($app) {
+            return new Outbox((int) $app['config']->get('bug-collector.max_buffer', 100));
+        });
         $this->app->singleton(Transport::class, HttpTransport::class);
         $this->app->singleton(ErrorReporter::class);
         $this->app->singleton(PerformanceReporter::class);

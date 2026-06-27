@@ -29,6 +29,9 @@ return [
         'cookies' => env('BUG_COLLECTOR_SEND_COOKIES', false),
     ],
 
+    // Nombre maximum de payloads bufferisés par cycle, garde-fou anti N+1.
+    'max_buffer' => env('BUG_COLLECTOR_MAX_BUFFER', 100),
+
     'performance' => [
         'enabled' => env('BUG_COLLECTOR_PERF_ENABLED', true),
 

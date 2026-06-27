@@ -25,7 +25,7 @@ class BugPayload
             'stackTrace' => self::trace($e, $traceDepth),
             'url'        => $request ? substr($request->fullUrl(), 0, 2000) : 'console',
             'ip'         => ($request?->ip()) ?: '127.0.0.1',
-            'userAgent'  => $request ? substr((string) $request->userAgent(), 0, 1000) : null,
+            'userAgent'  => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
             'username'   => self::userAttr($request, 'name'),
             'userEmail'  => self::userAttr($request, 'email'),
             'cookies'    => $request ? $request->cookies->all() : null,

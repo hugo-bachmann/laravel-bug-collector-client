@@ -19,6 +19,7 @@ class BugPayloadTest extends TestCase
         $this->assertIsArray($payload['stackTrace']);
         $this->assertSame('console', $payload['url']);
         $this->assertSame('127.0.0.1', $payload['ip']);
+        $this->assertNull($payload['userAgent']);
     }
 
     public function test_uses_http_status_code_for_http_exceptions(): void
@@ -46,10 +47,13 @@ class BugPayloadTest extends TestCase
     {
         $payload = BugPayload::fromThrowable(new RuntimeException('x'), null, 2);
 
-        $this->assertLessThanOrEqual(2, count($payload['stackTrace']));
+        $this->assertCount(2, $payload['stackTrace']);
         foreach ($payload['stackTrace'] as $frame) {
             $this->assertArrayNotHasKey('args', $frame);
             $this->assertArrayHasKey('function', $frame);
+            $this->assertArrayHasKey('file', $frame);
+            $this->assertArrayHasKey('line', $frame);
+            $this->assertArrayHasKey('class', $frame);
         }
     }
 

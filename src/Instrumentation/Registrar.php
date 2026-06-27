@@ -22,6 +22,10 @@ class Registrar
             return;
         }
 
-        // Les collecteurs seront ajoutés ici (request, command, job, query).
+        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+
+        if (method_exists($kernel, 'pushMiddleware')) {
+            $kernel->pushMiddleware(RequestTiming::class);
+        }
     }
 }

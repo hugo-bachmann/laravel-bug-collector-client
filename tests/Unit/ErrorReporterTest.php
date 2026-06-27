@@ -59,4 +59,16 @@ class ErrorReporterTest extends TestCase
         $this->assertCount(1, $pending);
         $this->assertNull($pending[0]['payload']['cookies']);
     }
+
+    public function test_reentrancy_guard_blocks_nested_report(): void
+    {
+        $reporter = $this->app->make(ErrorReporter::class);
+
+        $ref = new \ReflectionProperty($reporter, 'reporting');
+        $ref->setValue($reporter, true); // simulate "already reporting"
+
+        $reporter->report(new RuntimeException('Nested boom'));
+
+        $this->assertTrue($this->app->make(Outbox::class)->isEmpty());
+    }
 }

@@ -39,3 +39,7 @@ Tests use **Orchestra Testbench** (boots a minimal Laravel app for package testi
 - **Slow commands** → `CommandTiming` listens to `CommandStarting` / `CommandFinished`.
 
 All instrumentation honors the config kill switches and thresholds, and is non-blocking / fail-safe.
+
+### Octane / long-lived workers
+
+`Outbox` and the timing collectors (`RequestTiming`, `JobTiming`, `QueryTiming`, `CommandTiming`) are registered as container singletons. Under a standard HTTP request or artisan command the Outbox is flushed in the `terminating` callback registered by `BugCollectorServiceProvider::boot()`. Under a long-lived runtime (Octane, queue workers) that callback still fires per request/command cycle, so web and console flushes work correctly as long as the framework triggers `terminate()`. Queue jobs flush the Outbox immediately inside `JobTiming` after each job completes, so they do not rely on the terminating hook at all.

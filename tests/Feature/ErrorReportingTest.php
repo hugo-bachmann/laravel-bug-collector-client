@@ -4,7 +4,8 @@ namespace BugCollector\Client\Tests\Feature;
 
 use BugCollector\Client\Tests\TestCase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;use RuntimeException;
+use Illuminate\Support\Facades\Route;
+use RuntimeException;
 
 class ErrorReportingTest extends TestCase
 {

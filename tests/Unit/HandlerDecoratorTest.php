@@ -7,10 +7,13 @@ use BugCollector\Client\Reporting\ErrorReporter;
 use BugCollector\Client\Tests\TestCase;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use RuntimeException;
 
 class HandlerDecoratorTest extends TestCase
 {
+    use MockeryPHPUnitIntegration;
+
     public function test_report_calls_reporter_then_delegates_to_inner(): void
     {
         $e = new RuntimeException('Boom');

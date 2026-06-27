@@ -4,12 +4,17 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["laravel", "error-reporting", "performance", "monitoring", "bug-collector"],
+    "homepage": "https://github.com/hugobachmann/laravel-bug-collector-client",
     "authors": [
         {
             "name": "Hugo Bachmann",
             "email": "hugo.bachmann68@gmail.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/hugobachmann/laravel-bug-collector-client/issues",
+        "source": "https://github.com/hugobachmann/laravel-bug-collector-client"
+    },
     "require": {
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0|^13.0",
@@ -41,6 +46,6 @@
     "config": {
         "sort-packages": true
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

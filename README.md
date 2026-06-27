@@ -1,6 +1,6 @@
 # Bug Collector — Client Laravel
 
-Client Laravel pour [Bug Collector](https://github.com/) : reporte automatiquement les **erreurs** et les **anomalies de performance** (requêtes HTTP, jobs, queries SQL, commandes artisan trop lentes) à un service Bug Collector centralisé.
+Client Laravel pour [Bug Collector](https://github.com/hugobachmann/bug-collector) : reporte automatiquement les **erreurs** et les **anomalies de performance** (requêtes HTTP, jobs, queries SQL, commandes artisan trop lentes) à un service Bug Collector centralisé.
 
 L'instrumentation et le transport sont implémentés. L'authentification se fait via le header `X-Ingest-Key` ; l'envoi est fail-safe (une panne du collecteur ne casse jamais l'app hôte) ; les seuils de performance sont configurables.
 
@@ -42,4 +42,4 @@ La capture des cookies est **désactivée par défaut** (opt-in via `BUG_COLLECT
 
 ## Licence
 
-MIT
+Ce package est distribué sous licence [MIT](LICENSE).

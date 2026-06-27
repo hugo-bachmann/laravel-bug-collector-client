@@ -27,5 +27,10 @@ class Registrar
         if (method_exists($kernel, 'pushMiddleware')) {
             $kernel->pushMiddleware(RequestTiming::class);
         }
+
+        $events = $this->app->make(\Illuminate\Contracts\Events\Dispatcher::class);
+
+        $events->listen(\Illuminate\Console\Events\CommandStarting::class, [CommandTiming::class, 'starting']);
+        $events->listen(\Illuminate\Console\Events\CommandFinished::class, [CommandTiming::class, 'finished']);
     }
 }

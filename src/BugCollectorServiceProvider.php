@@ -2,6 +2,7 @@
 
 namespace BugCollector\Client;
 
+use BugCollector\Client\Instrumentation\CommandTiming;
 use BugCollector\Client\Instrumentation\HandlerDecorator;
 use BugCollector\Client\Instrumentation\Registrar;
 use BugCollector\Client\Instrumentation\RequestTiming;
@@ -26,6 +27,7 @@ class BugCollectorServiceProvider extends ServiceProvider
         $this->app->singleton(ErrorReporter::class);
         $this->app->singleton(PerformanceReporter::class);
         $this->app->singleton(RequestTiming::class);
+        $this->app->singleton(CommandTiming::class);
         $this->app->singleton(Registrar::class);
 
         // Décore le handler d'exceptions de l'app : report() passe par notre

@@ -18,7 +18,7 @@ class CommandTimingTest extends TestCase
 
         $collector = $this->app->make(CommandTiming::class);
         $input = new ArrayInput([]);
-        $output = new BufferedOutput();
+        $output = new BufferedOutput;
 
         $collector->starting(new CommandStarting('app:sync', $input, $output));
         $collector->finished(new CommandFinished('app:sync', $input, $output, 0));
@@ -34,7 +34,7 @@ class CommandTimingTest extends TestCase
         config(['bug-collector.performance.thresholds.command' => 0]);
 
         $collector = $this->app->make(CommandTiming::class);
-        $collector->finished(new CommandFinished('app:orphan', new ArrayInput([]), new BufferedOutput(), 0));
+        $collector->finished(new CommandFinished('app:orphan', new ArrayInput([]), new BufferedOutput, 0));
 
         $this->assertTrue($this->app->make(Outbox::class)->isEmpty());
     }

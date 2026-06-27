@@ -34,10 +34,4 @@ class JobTimingTest extends TestCase
                 && $request['label'] === 'App\\Jobs\\SendInvoice';
         });
     }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
 }

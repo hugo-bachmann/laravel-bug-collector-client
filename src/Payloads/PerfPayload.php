@@ -13,10 +13,10 @@ class PerfPayload
     public static function make(string $kind, string $label, int $durationMs, ?array $context = null): array
     {
         return [
-            'kind'        => $kind,
-            'label'       => substr($label, 0, 1000),
+            'kind' => $kind,
+            'label' => substr($label, 0, 1000),
             'duration_ms' => max(0, $durationMs),
-            'context'     => $context,
+            'context' => $context,
         ];
     }
 }

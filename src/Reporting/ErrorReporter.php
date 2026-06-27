@@ -48,7 +48,7 @@ class ErrorReporter
                 BugPayload::fromThrowable($e, $this->currentRequest(), $depth),
             );
         } catch (Throwable) {
-            // Fail-safe.
+            // Sécurité : on n'impacte jamais l'app hôte.
         } finally {
             $this->reporting = false;
         }

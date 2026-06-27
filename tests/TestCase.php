@@ -23,9 +23,9 @@ abstract class TestCase extends Orchestra
         // Base sqlite en mémoire pour les tests qui touchent la DB.
         $config->set('database.default', 'testing');
         $config->set('database.connections.testing', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
     }
 }

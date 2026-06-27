@@ -10,7 +10,7 @@ class OutboxTest extends TestCase
 {
     public function test_record_then_pending_reflects_entries(): void
     {
-        $outbox = new Outbox();
+        $outbox = new Outbox;
         $this->assertTrue($outbox->isEmpty());
 
         $outbox->record('/errors', ['a' => 1]);
@@ -21,13 +21,15 @@ class OutboxTest extends TestCase
 
     public function test_flush_sends_each_entry_once_then_empties(): void
     {
-        $outbox = new Outbox();
+        $outbox = new Outbox;
         $outbox->record('/errors', ['a' => 1]);
         $outbox->record('/perf', ['b' => 2]);
 
         $sent = [];
-        $transport = new class($sent) implements Transport {
+        $transport = new class($sent) implements Transport
+        {
             public function __construct(public array &$sent) {}
+
             public function send(string $path, array $payload): void
             {
                 $this->sent[] = [$path, $payload];

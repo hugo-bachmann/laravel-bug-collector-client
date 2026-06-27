@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Throwable;
 
+/** Middleware mesurant la durée des requêtes HTTP et reportant celles dépassant le seuil configuré. */
 class RequestTiming
 {
     private const START_KEY = 'bugcollector_start';
@@ -34,7 +35,7 @@ class RequestTiming
 
             $this->reporter->report('request', $label, $ms);
         } catch (Throwable) {
-            // Fail-safe.
+            // Sécurité : on n'impacte jamais l'app hôte.
         }
     }
 }

@@ -6,6 +6,7 @@ use BugCollector\Client\Reporting\PerformanceReporter;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 
+/** Mesure la durée des commandes artisan et reporte celles dépassant le seuil configuré. */
 class CommandTiming
 {
     /** @var array<string, float> */

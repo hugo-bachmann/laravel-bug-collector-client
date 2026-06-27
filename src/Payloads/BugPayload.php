@@ -18,17 +18,17 @@ class BugPayload
         $message = substr($e->getMessage(), 0, 1000);
 
         return [
-            'message'    => $message !== '' ? $message : $e::class,
-            'type'       => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
-            'file'       => substr($e->getFile(), 0, 1000),
-            'line'       => $e->getLine(),
+            'message' => $message !== '' ? $message : $e::class,
+            'type' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
+            'file' => substr($e->getFile(), 0, 1000),
+            'line' => $e->getLine(),
             'stackTrace' => self::trace($e, $traceDepth),
-            'url'        => $request ? substr($request->fullUrl(), 0, 2000) : 'console',
-            'ip'         => ($request?->ip()) ?: '127.0.0.1',
-            'userAgent'  => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
-            'username'   => self::userAttr($request, 'name'),
-            'userEmail'  => self::userAttr($request, 'email'),
-            'cookies'    => $request ? $request->cookies->all() : null,
+            'url' => $request ? substr($request->fullUrl(), 0, 2000) : 'console',
+            'ip' => ($request?->ip()) ?: '127.0.0.1',
+            'userAgent' => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
+            'username' => self::userAttr($request, 'name'),
+            'userEmail' => self::userAttr($request, 'email'),
+            'cookies' => $request ? $request->cookies->all() : null,
         ];
     }
 
@@ -43,10 +43,10 @@ class BugPayload
         $frames = array_slice($e->getTrace(), 0, max(0, $depth));
 
         return array_map(static fn (array $frame): array => [
-            'file'     => $frame['file'] ?? null,
-            'line'     => $frame['line'] ?? null,
+            'file' => $frame['file'] ?? null,
+            'line' => $frame['line'] ?? null,
             'function' => $frame['function'] ?? null,
-            'class'    => $frame['class'] ?? null,
+            'class' => $frame['class'] ?? null,
         ], $frames);
     }
 

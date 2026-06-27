@@ -4,6 +4,7 @@ namespace BugCollector\Client\Tests\Unit;
 
 use BugCollector\Client\Outbox;
 use BugCollector\Client\Reporting\ErrorReporter;
+use BugCollector\Client\Tests\Fixtures\OwnException;
 use BugCollector\Client\Tests\TestCase;
 use RuntimeException;
 
@@ -40,7 +41,7 @@ class ErrorReporterTest extends TestCase
 
     public function test_ignores_exceptions_from_our_own_namespace(): void
     {
-        $own = new \BugCollector\Client\Tests\Fixtures\OwnException('loop');
+        $own = new OwnException('loop');
 
         $this->reporter()->report($own);
 

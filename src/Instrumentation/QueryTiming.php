@@ -5,6 +5,7 @@ namespace BugCollector\Client\Instrumentation;
 use BugCollector\Client\Reporting\PerformanceReporter;
 use Illuminate\Database\Events\QueryExecuted;
 
+/** Reporte les requêtes SQL dont la durée dépasse le seuil configuré. */
 class QueryTiming
 {
     public function __construct(private PerformanceReporter $reporter) {}

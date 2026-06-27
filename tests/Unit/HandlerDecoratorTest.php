@@ -6,6 +6,7 @@ use BugCollector\Client\Instrumentation\HandlerDecorator;
 use BugCollector\Client\Reporting\ErrorReporter;
 use BugCollector\Client\Tests\TestCase;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Http\Request;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use RuntimeException;
@@ -44,7 +45,7 @@ class HandlerDecoratorTest extends TestCase
     public function test_render_and_shouldreport_delegate(): void
     {
         $e = new RuntimeException('Boom');
-        $request = Mockery::mock(\Illuminate\Http\Request::class);
+        $request = Mockery::mock(Request::class);
 
         $inner = Mockery::mock(ExceptionHandler::class);
         $inner->shouldReceive('shouldReport')->once()->with($e)->andReturnTrue();
@@ -56,11 +57,5 @@ class HandlerDecoratorTest extends TestCase
 
         $this->assertTrue($decorator->shouldReport($e));
         $this->assertSame('rendered', $decorator->render($request, $e));
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 }

@@ -3,7 +3,15 @@
 namespace BugCollector\Client\Instrumentation;
 
 use BugCollector\Client\Support\Gate;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 
 class Registrar
 {
@@ -22,21 +30,21 @@ class Registrar
             return;
         }
 
-        $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+        $kernel = $this->app->make(Kernel::class);
 
         if (method_exists($kernel, 'pushMiddleware')) {
             $kernel->pushMiddleware(RequestTiming::class);
         }
 
-        $events = $this->app->make(\Illuminate\Contracts\Events\Dispatcher::class);
+        $events = $this->app->make(Dispatcher::class);
 
-        $events->listen(\Illuminate\Console\Events\CommandStarting::class, [CommandTiming::class, 'starting']);
-        $events->listen(\Illuminate\Console\Events\CommandFinished::class, [CommandTiming::class, 'finished']);
+        $events->listen(CommandStarting::class, [CommandTiming::class, 'starting']);
+        $events->listen(CommandFinished::class, [CommandTiming::class, 'finished']);
 
-        $events->listen(\Illuminate\Queue\Events\JobProcessing::class, [JobTiming::class, 'processing']);
-        $events->listen(\Illuminate\Queue\Events\JobProcessed::class, [JobTiming::class, 'processed']);
-        $events->listen(\Illuminate\Queue\Events\JobFailed::class, [JobTiming::class, 'failed']);
+        $events->listen(JobProcessing::class, [JobTiming::class, 'processing']);
+        $events->listen(JobProcessed::class, [JobTiming::class, 'processed']);
+        $events->listen(JobFailed::class, [JobTiming::class, 'failed']);
 
-        $events->listen(\Illuminate\Database\Events\QueryExecuted::class, [QueryTiming::class, 'handle']);
+        $events->listen(QueryExecuted::class, [QueryTiming::class, 'handle']);
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 
+/** Mesure la durée des jobs de queue et reporte ceux dépassant le seuil configuré ; vide l'Outbox immédiatement (worker long-vivant). */
 class JobTiming
 {
     /** @var array<string, float> */

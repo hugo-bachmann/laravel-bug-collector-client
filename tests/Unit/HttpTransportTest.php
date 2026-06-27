@@ -4,7 +4,6 @@ namespace BugCollector\Client\Tests\Unit;
 
 use BugCollector\Client\Tests\TestCase;
 use BugCollector\Client\Transport\HttpTransport;
-use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Http;
 
 class HttpTransportTest extends TestCase

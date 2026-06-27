@@ -42,10 +42,12 @@ class ErrorReporter
 
         try {
             $depth = (int) $this->config->get('bug-collector.errors.trace_depth', 50);
+            $includeCookies = (bool) $this->config->get('bug-collector.errors.cookies', false);
+            $redact = array_values(array_filter([(string) $this->config->get('session.cookie'), 'XSRF-TOKEN']));
 
             $this->outbox->record(
                 (string) $this->config->get('bug-collector.endpoints.errors'),
-                BugPayload::fromThrowable($e, $this->currentRequest(), $depth),
+                BugPayload::fromThrowable($e, $this->currentRequest(), $depth, $includeCookies, $redact),
             );
         } catch (Throwable) {
             // Sécurité : on n'impacte jamais l'app hôte.

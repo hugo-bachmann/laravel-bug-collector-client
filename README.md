@@ -36,6 +36,10 @@ Voir `config/bug-collector.php` pour les seuils de performance (en millisecondes
 | `query`   | 1000 ms  |
 | `command` | 60000 ms |
 
+## Cookies
+
+La capture des cookies est **désactivée par défaut** (opt-in via `BUG_COLLECTOR_SEND_COOKIES=true`). Quand elle est activée, les cookies sensibles (session Laravel, `XSRF-TOKEN`, tout cookie commençant par `remember_`) sont automatiquement remplacés par `[REDACTED]`.
+
 ## Licence
 
 MIT

@@ -22,6 +22,11 @@ return [
     'errors' => [
         'enabled' => env('BUG_COLLECTOR_ERRORS_ENABLED', true),
         'trace_depth' => env('BUG_COLLECTOR_TRACE_DEPTH', 50),
+
+        // Capture des cookies : désactivée par défaut (opt-in). Quand activée,
+        // les cookies sensibles (session, CSRF, remember_*) sont automatiquement
+        // remplacés par '[REDACTED]'.
+        'cookies' => env('BUG_COLLECTOR_SEND_COOKIES', false),
     ],
 
     'performance' => [

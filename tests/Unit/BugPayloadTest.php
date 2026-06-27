@@ -70,4 +70,39 @@ class BugPayloadTest extends TestCase
         $this->assertSame('203.0.113.7', $payload['ip']);
         $this->assertSame('PHPUnit', $payload['userAgent']);
     }
+
+    public function test_cookies_are_null_by_default_even_with_request(): void
+    {
+        $request = Request::create('https://app.test/', 'GET', cookies: [
+            'laravel_session' => 'secret123',
+            'theme' => 'dark',
+        ]);
+
+        $payload = BugPayload::fromThrowable(new RuntimeException('x'), $request);
+
+        $this->assertNull($payload['cookies']);
+    }
+
+    public function test_cookies_are_included_and_sensitive_ones_redacted_when_opt_in(): void
+    {
+        $request = Request::create('https://app.test/', 'GET', cookies: [
+            'laravel_session' => 'secret123',
+            'XSRF-TOKEN' => 'csrf_value',
+            'remember_web_abc' => 'remember_token',
+            'theme' => 'dark',
+        ]);
+
+        $payload = BugPayload::fromThrowable(
+            new RuntimeException('x'),
+            $request,
+            includeCookies: true,
+            redactCookieNames: ['laravel_session', 'XSRF-TOKEN'],
+        );
+
+        $this->assertIsArray($payload['cookies']);
+        $this->assertSame('[REDACTED]', $payload['cookies']['laravel_session']);
+        $this->assertSame('[REDACTED]', $payload['cookies']['XSRF-TOKEN']);
+        $this->assertSame('[REDACTED]', $payload['cookies']['remember_web_abc']);
+        $this->assertSame('dark', $payload['cookies']['theme']);
+    }
 }

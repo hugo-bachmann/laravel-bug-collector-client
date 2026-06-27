@@ -47,4 +47,16 @@ class ErrorReporterTest extends TestCase
 
         $this->assertTrue($this->outbox()->isEmpty());
     }
+
+    public function test_cookies_are_null_in_payload_when_config_cookies_off(): void
+    {
+        // cookies opt-in is false by default — no cookies should reach the payload.
+        config(['bug-collector.errors.cookies' => false]);
+
+        $this->reporter()->report(new RuntimeException('Boom'));
+
+        $pending = $this->outbox()->pending();
+        $this->assertCount(1, $pending);
+        $this->assertNull($pending[0]['payload']['cookies']);
+    }
 }

@@ -2,39 +2,54 @@
 
 namespace BugCollector\Client;
 
+use BugCollector\Client\Instrumentation\HandlerDecorator;
+use BugCollector\Client\Instrumentation\Registrar;
+use BugCollector\Client\Reporting\ErrorReporter;
+use BugCollector\Client\Support\Gate;
+use BugCollector\Client\Transport\HttpTransport;
+use BugCollector\Client\Transport\Transport;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\ServiceProvider;
 
 class BugCollectorServiceProvider extends ServiceProvider
 {
-    /**
-     * Enregistre les liaisons du conteneur.
-     */
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/bug-collector.php', 'bug-collector');
 
-        // L'Outbox est partagé (singleton) entre les reporters et le flush.
-        $this->app->singleton(\BugCollector\Client\Outbox::class);
+        $this->app->singleton(Gate::class);
+        $this->app->singleton(Outbox::class);
+        $this->app->singleton(Transport::class, HttpTransport::class);
+        $this->app->singleton(ErrorReporter::class);
+        $this->app->singleton(Registrar::class);
+
+        // Décore le handler d'exceptions de l'app : report() passe par notre
+        // reporter puis délègue toujours à l'original. Zéro config côté client.
+        $this->app->extend(ExceptionHandler::class, function (ExceptionHandler $handler, Container $app) {
+            return new HandlerDecorator($handler, $app->make(ErrorReporter::class));
+        });
     }
 
-    /**
-     * Démarre le package : publication de config + instrumentation.
-     */
     public function boot(): void
     {
         $this->publishes([
             __DIR__.'/../config/bug-collector.php' => config_path('bug-collector.php'),
         ], 'bug-collector-config');
 
-        if (! config('bug-collector.enabled')) {
+        if (! $this->app->make(Gate::class)->enabled()) {
             return;
         }
 
-        // TODO: brancher l'instrumentation une fois le contrat figé :
-        //   - reporting des erreurs (handler d'exceptions)
-        //   - requêtes HTTP lentes (middleware de timing)
-        //   - jobs lents (events de queue)
-        //   - queries lentes (DB::whenQueryingForLongerThan / DB::listen)
-        //   - commandes lentes (events de console)
+        // Vide l'Outbox après la réponse (web) ou après la commande (console).
+        $this->app->terminating(function () {
+            $outbox = $this->app->make(Outbox::class);
+
+            if (! $outbox->isEmpty()) {
+                $outbox->flush($this->app->make(Transport::class));
+            }
+        });
+
+        $this->app->make(Registrar::class)->register();
     }
 }

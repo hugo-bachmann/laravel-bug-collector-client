@@ -2,8 +2,6 @@
 
 namespace BugCollector\Client;
 
-use BugCollector\Client\Transport\HttpTransport;
-use BugCollector\Client\Transport\Transport;
 use Illuminate\Support\ServiceProvider;
 
 class BugCollectorServiceProvider extends ServiceProvider
@@ -15,15 +13,7 @@ class BugCollectorServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/bug-collector.php', 'bug-collector');
 
-        // Enregistre le transport HTTP du collecteur.
-        $this->app->singleton(HttpTransport::class, function ($app) {
-            return new HttpTransport(
-                $app[\Illuminate\Http\Client\Factory::class],
-                $app['config'],
-            );
-        });
-
-        $this->app->bind(Transport::class, HttpTransport::class);
+        // TODO: enregistrer le client HTTP / transport (à concevoir).
     }
 
     /**

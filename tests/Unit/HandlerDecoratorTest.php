@@ -20,6 +20,7 @@ class HandlerDecoratorTest extends TestCase
         $e = new RuntimeException('Boom');
 
         $inner = Mockery::mock(ExceptionHandler::class);
+        $inner->shouldReceive('shouldReport')->once()->with($e)->andReturnTrue();
         $inner->shouldReceive('report')->once()->with($e);
 
         $reporter = Mockery::mock(ErrorReporter::class);
@@ -33,12 +34,28 @@ class HandlerDecoratorTest extends TestCase
         $e = new RuntimeException('Boom');
 
         $inner = Mockery::mock(ExceptionHandler::class);
+        $inner->shouldReceive('shouldReport')->once()->with($e)->andReturnTrue();
         $inner->shouldReceive('report')->once()->with($e);
 
         $reporter = Mockery::mock(ErrorReporter::class);
         $reporter->shouldReceive('report')->andThrow(new RuntimeException('reporter exploded'));
 
         // Ne doit pas lever : la délégation au handler d'origine reste garantie.
+        (new HandlerDecorator($inner, $reporter))->report($e);
+    }
+
+    public function test_report_skips_reporter_when_inner_should_not_report(): void
+    {
+        $e = new RuntimeException('Boom');
+
+        $inner = Mockery::mock(ExceptionHandler::class);
+        $inner->shouldReceive('shouldReport')->once()->with($e)->andReturnFalse();
+        $inner->shouldReceive('report')->once()->with($e);
+
+        $reporter = Mockery::mock(ErrorReporter::class);
+        $reporter->shouldReceive('report')->never();
+
+        // Les exceptions filtrées (404, 422, 401…) ne doivent pas être transmises au collector.
         (new HandlerDecorator($inner, $reporter))->report($e);
     }
 

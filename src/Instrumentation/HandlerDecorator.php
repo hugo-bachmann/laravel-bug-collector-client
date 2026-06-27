@@ -15,10 +15,12 @@ class HandlerDecorator implements ExceptionHandler
 
     public function report(Throwable $e): void
     {
-        try {
-            $this->reporter->report($e);
-        } catch (Throwable) {
-            // Notre reporting ne doit jamais empêcher la délégation.
+        if ($this->inner->shouldReport($e)) {
+            try {
+                $this->reporter->report($e);
+            } catch (Throwable) {
+                // Notre reporting ne doit jamais empêcher la délégation.
+            }
         }
 
         $this->inner->report($e);

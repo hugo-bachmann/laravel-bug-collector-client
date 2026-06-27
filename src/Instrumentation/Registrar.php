@@ -36,5 +36,7 @@ class Registrar
         $events->listen(\Illuminate\Queue\Events\JobProcessing::class, [JobTiming::class, 'processing']);
         $events->listen(\Illuminate\Queue\Events\JobProcessed::class, [JobTiming::class, 'processed']);
         $events->listen(\Illuminate\Queue\Events\JobFailed::class, [JobTiming::class, 'failed']);
+
+        $events->listen(\Illuminate\Database\Events\QueryExecuted::class, [QueryTiming::class, 'handle']);
     }
 }

@@ -17,8 +17,28 @@ class Gate
             return false;
         }
 
-        return ! empty($this->config->get('bug-collector.base_url'))
-            && ! empty($this->config->get('bug-collector.ingest_key'));
+        $baseUrl = (string) $this->config->get('bug-collector.base_url');
+
+        return $baseUrl !== ''
+            && ! empty($this->config->get('bug-collector.ingest_key'))
+            && $this->isSecureBaseUrl($baseUrl);
+    }
+
+    /**
+     * Exige HTTPS pour ne jamais envoyer la clé d'ingestion ni les données en clair.
+     * Tolère http sur localhost / 127.0.0.1 / ::1 pour le développement local.
+     */
+    private function isSecureBaseUrl(string $url): bool
+    {
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+
+        if ($scheme === 'https') {
+            return true;
+        }
+
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+
+        return in_array($host, ['localhost', '127.0.0.1', '::1'], strict: true);
     }
 
     public function shouldReportErrors(): bool

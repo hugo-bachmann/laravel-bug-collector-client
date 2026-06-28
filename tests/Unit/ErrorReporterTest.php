@@ -6,6 +6,7 @@ use BugCollector\Client\Outbox;
 use BugCollector\Client\Reporting\ErrorReporter;
 use BugCollector\Client\Tests\Fixtures\OwnException;
 use BugCollector\Client\Tests\TestCase;
+use Illuminate\Http\Request;
 use RuntimeException;
 
 class ErrorReporterTest extends TestCase
@@ -58,6 +59,28 @@ class ErrorReporterTest extends TestCase
         $pending = $this->outbox()->pending();
         $this->assertCount(1, $pending);
         $this->assertNull($pending[0]['payload']['cookies']);
+    }
+
+    public function test_configured_cookie_names_are_redacted(): void
+    {
+        config([
+            'bug-collector.errors.cookies' => true,
+            'bug-collector.errors.redact_cookies' => 'tenant_id, locale_pref',
+        ]);
+
+        $request = Request::create('https://app.test/', 'GET', cookies: [
+            'tenant_id' => 'acme',
+            'locale_pref' => 'fr',
+            'theme' => 'dark',
+        ]);
+        $this->app->instance('request', $request);
+
+        $this->reporter()->report(new RuntimeException('Boom'));
+
+        $cookies = $this->outbox()->pending()[0]['payload']['cookies'];
+        $this->assertSame('[REDACTED]', $cookies['tenant_id']);
+        $this->assertSame('[REDACTED]', $cookies['locale_pref']);
+        $this->assertSame('dark', $cookies['theme']);
     }
 
     public function test_reentrancy_guard_blocks_nested_report(): void

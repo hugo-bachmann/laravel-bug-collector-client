@@ -43,7 +43,8 @@ class ErrorReporter
         try {
             $depth = (int) $this->config->get('bug-collector.errors.trace_depth', 50);
             $includeCookies = (bool) $this->config->get('bug-collector.errors.cookies', false);
-            $redact = array_values(array_filter([(string) $this->config->get('session.cookie'), 'XSRF-TOKEN']));
+            $extra = array_filter(array_map('trim', explode(',', (string) $this->config->get('bug-collector.errors.redact_cookies', ''))));
+            $redact = array_values(array_filter([(string) $this->config->get('session.cookie'), 'XSRF-TOKEN', ...$extra]));
 
             $this->outbox->record(
                 (string) $this->config->get('bug-collector.endpoints.errors'),

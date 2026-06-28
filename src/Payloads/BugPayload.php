@@ -35,7 +35,7 @@ class BugPayload
             'file' => substr($e->getFile(), 0, 1000),
             'line' => $e->getLine(),
             'stackTrace' => self::trace($e, $traceDepth),
-            'url' => $request ? substr($request->fullUrl(), 0, 2000) : 'console',
+            'url' => $request ? substr(self::redactUrl($request->fullUrl()), 0, 2000) : 'console',
             'ip' => ($request?->ip()) ?: '127.0.0.1',
             'userAgent' => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
             'username' => self::userAttr($request, 'name'),
@@ -44,9 +44,20 @@ class BugPayload
         ];
     }
 
+    /** Fragments de noms (insensibles à la casse) toujours masqués dans les cookies. */
+    private const SENSITIVE_COOKIE_FRAGMENTS = ['token', 'auth', 'session', 'csrf', 'secret', 'password'];
+
+    /** Noms de paramètres d'URL (insensibles à la casse) dont la valeur est masquée. */
+    private const SENSITIVE_QUERY_KEYS = [
+        'token', '_token', 'api_token', 'access_token', 'refresh_token',
+        'signature', 'password', 'passwd', 'pwd', 'secret',
+        'api_key', 'apikey', 'key', 'code', 'auth', 'otp',
+    ];
+
     /**
      * Retourne une copie du tableau de cookies où les entrées sensibles sont masquées.
-     * Sont masqués : les noms listés dans $redactNames et ceux commençant par remember_.
+     * Sont masqués : les noms listés dans $redactNames, ceux commençant par remember_,
+     * et ceux contenant un fragment sensible (token, auth, session, csrf, secret, password).
      *
      * @param  array<string, mixed>  $cookies
      * @param  array<int, string>  $redactNames
@@ -57,14 +68,63 @@ class BugPayload
         $result = [];
 
         foreach ($cookies as $key => $value) {
-            if (in_array($key, $redactNames, strict: true) || str_starts_with($key, 'remember_')) {
-                $result[$key] = '[REDACTED]';
-            } else {
-                $result[$key] = $value;
-            }
+            $result[$key] = self::isSensitiveCookie((string) $key, $redactNames) ? '[REDACTED]' : $value;
         }
 
         return $result;
+    }
+
+    /**
+     * @param  array<int, string>  $redactNames
+     */
+    private static function isSensitiveCookie(string $key, array $redactNames): bool
+    {
+        if (in_array($key, $redactNames, strict: true) || str_starts_with($key, 'remember_')) {
+            return true;
+        }
+
+        $lower = strtolower($key);
+
+        foreach (self::SENSITIVE_COOKIE_FRAGMENTS as $fragment) {
+            if (str_contains($lower, $fragment)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Masque la valeur des paramètres de query sensibles (token, signature, password…).
+     * L'URL sans query est retournée telle quelle.
+     */
+    private static function redactUrl(string $fullUrl): string
+    {
+        $parts = parse_url($fullUrl);
+
+        if ($parts === false || ! isset($parts['query']) || $parts['query'] === '') {
+            return $fullUrl;
+        }
+
+        parse_str($parts['query'], $params);
+
+        $sensitive = array_map('strtolower', self::SENSITIVE_QUERY_KEYS);
+
+        array_walk_recursive($params, static function (&$value, $key) use ($sensitive): void {
+            if (in_array(strtolower((string) $key), $sensitive, strict: true)) {
+                $value = '[REDACTED]';
+            }
+        });
+
+        $rebuilt = http_build_query($params);
+
+        $scheme = isset($parts['scheme']) ? $parts['scheme'].'://' : '';
+        $host = $parts['host'] ?? '';
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+
+        return $scheme.$host.$port.$path.'?'.$rebuilt.$fragment;
     }
 
     /**

@@ -105,4 +105,47 @@ class BugPayloadTest extends TestCase
         $this->assertSame('[REDACTED]', $payload['cookies']['remember_web_abc']);
         $this->assertSame('dark', $payload['cookies']['theme']);
     }
+
+    public function test_redacts_cookies_matching_sensitive_fragments(): void
+    {
+        // Filet deny élargi : noms custom contenant un motif sensible (token,
+        // auth, session, csrf, secret, password) sont masqués sans liste explicite.
+        $request = Request::create('https://app.test/', 'GET', cookies: [
+            'auth_token' => 'jwt_value',
+            'My_Session_Id' => 'sess',
+            'theme' => 'dark',
+        ]);
+
+        $payload = BugPayload::fromThrowable(
+            new RuntimeException('x'),
+            $request,
+            includeCookies: true,
+        );
+
+        $this->assertSame('[REDACTED]', $payload['cookies']['auth_token']);
+        $this->assertSame('[REDACTED]', $payload['cookies']['My_Session_Id']);
+        $this->assertSame('dark', $payload['cookies']['theme']);
+    }
+
+    public function test_redacts_sensitive_query_params(): void
+    {
+        $request = Request::create('https://app.test/reset?token=abc&page=2&Signature=xyz', 'GET');
+
+        $payload = BugPayload::fromThrowable(new RuntimeException('x'), $request);
+
+        $this->assertStringContainsString('token=%5BREDACTED%5D', $payload['url']);
+        $this->assertStringContainsString('Signature=%5BREDACTED%5D', $payload['url']);
+        $this->assertStringContainsString('page=2', $payload['url']);
+        $this->assertStringNotContainsString('abc', $payload['url']);
+        $this->assertStringNotContainsString('xyz', $payload['url']);
+    }
+
+    public function test_leaves_url_without_query_untouched(): void
+    {
+        $request = Request::create('https://app.test/orders/42', 'GET');
+
+        $payload = BugPayload::fromThrowable(new RuntimeException('x'), $request);
+
+        $this->assertSame('https://app.test/orders/42', $payload['url']);
+    }
 }

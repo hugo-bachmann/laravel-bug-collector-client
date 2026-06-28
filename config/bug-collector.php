@@ -24,9 +24,13 @@ return [
         'trace_depth' => env('BUG_COLLECTOR_TRACE_DEPTH', 50),
 
         // Capture des cookies : désactivée par défaut (opt-in). Quand activée,
-        // les cookies sensibles (session, CSRF, remember_*) sont automatiquement
-        // remplacés par '[REDACTED]'.
+        // les cookies sensibles (session, CSRF, remember_*, et tout nom contenant
+        // token/auth/session/csrf/secret/password) sont automatiquement masqués.
         'cookies' => env('BUG_COLLECTOR_SEND_COOKIES', false),
+
+        // Noms de cookies additionnels à masquer (CSV), en plus des défauts
+        // (session, XSRF-TOKEN, remember_*) et des motifs sensibles courants.
+        'redact_cookies' => env('BUG_COLLECTOR_REDACT_COOKIES', ''),
     ],
 
     // Nombre maximum de payloads bufferisés par cycle, garde-fou anti N+1.

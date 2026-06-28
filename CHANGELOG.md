@@ -4,7 +4,7 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
-## [Unreleased]
+## [0.1.1] - 2026-06-28
 
 ### Sécurité
 - Masquage des paramètres d'URL sensibles (`token`, `signature`, `password`, `secret`, `api_key`, `code`, `otp`…) avant l'envoi : seule la valeur est remplacée par `[REDACTED]`, le reste de l'URL est conservé.
@@ -24,5 +24,5 @@ projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 - Capture des cookies opt-in (désactivée par défaut, `BUG_COLLECTOR_SEND_COOKIES`) avec rédaction des cookies sensibles (session, `XSRF-TOKEN`, `remember_*`).
 - Configuration publiable (`base_url`, endpoints, seuils, kill-switches globaux et par fonctionnalité).
 
-[Unreleased]: https://github.com/hugo-bachmann/laravel-bug-collector-client/compare/v0.1.0...HEAD
+[0.1.1]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.1
 [0.1.0]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.0

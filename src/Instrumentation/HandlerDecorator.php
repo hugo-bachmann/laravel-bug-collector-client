@@ -40,4 +40,17 @@ class HandlerDecorator implements ExceptionHandler
     {
         $this->inner->renderForConsole($output, $e);
     }
+
+    /**
+     * Délègue au handler décoré toute méthode hors du contrat ExceptionHandler.
+     *
+     * Le handler concret de Laravel expose des méthodes supplémentaires
+     * (reportable, renderable, map, ignore, dontReport...) sur lesquelles
+     * s'appuient d'autres packages (ex. Laravel Pulse). Sans cette délégation,
+     * leur appel lèverait une erreur fatale au boot.
+     */
+    public function __call(string $method, array $arguments)
+    {
+        return $this->inner->{$method}(...$arguments);
+    }
 }

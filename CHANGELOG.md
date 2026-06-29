@@ -4,6 +4,11 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [0.1.2] - 2026-06-29
+
+### Corrigé
+- `HandlerDecorator` délègue désormais au handler décoré toute méthode hors du contrat `ExceptionHandler` (via `__call`). Les packages qui s'appuient sur les méthodes du handler concret de Laravel — `reportable()`, `renderable()`, `map()`, `ignore()`… — fonctionnent à nouveau. Corrige une erreur fatale au boot (`Call to undefined method HandlerDecorator::reportable()`) en présence de Laravel Pulse.
+
 ## [0.1.1] - 2026-06-28
 
 ### Sécurité
@@ -24,5 +29,6 @@ projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 - Capture des cookies opt-in (désactivée par défaut, `BUG_COLLECTOR_SEND_COOKIES`) avec rédaction des cookies sensibles (session, `XSRF-TOKEN`, `remember_*`).
 - Configuration publiable (`base_url`, endpoints, seuils, kill-switches globaux et par fonctionnalité).
 
+[0.1.2]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.2
 [0.1.1]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.1
 [0.1.0]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.0

@@ -75,4 +75,21 @@ class HandlerDecoratorTest extends TestCase
         $this->assertTrue($decorator->shouldReport($e));
         $this->assertSame('rendered', $decorator->render($request, $e));
     }
+
+    public function test_unknown_methods_are_forwarded_to_inner_handler(): void
+    {
+        // Des packages tiers (ex. Laravel Pulse) appellent reportable()/renderable()
+        // sur le handler résolu. Hors du contrat ExceptionHandler, ces méthodes
+        // doivent être déléguées au handler décoré plutôt que de lever une erreur.
+        $callback = fn () => null;
+
+        $inner = Mockery::mock(ExceptionHandler::class);
+        $inner->shouldReceive('reportable')->once()->with($callback)->andReturn('reportable-handler');
+
+        $reporter = Mockery::mock(ErrorReporter::class);
+
+        $decorator = new HandlerDecorator($inner, $reporter);
+
+        $this->assertSame('reportable-handler', $decorator->reportable($callback));
+    }
 }

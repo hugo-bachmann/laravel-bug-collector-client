@@ -48,8 +48,10 @@ class HandlerDecorator implements ExceptionHandler
      * (reportable, renderable, map, ignore, dontReport...) sur lesquelles
      * s'appuient d'autres packages (ex. Laravel Pulse). Sans cette délégation,
      * leur appel lèverait une erreur fatale au boot.
+     *
+     * @param  array<int, mixed>  $arguments
      */
-    public function __call(string $method, array $arguments)
+    public function __call(string $method, array $arguments): mixed
     {
         return $this->inner->{$method}(...$arguments);
     }

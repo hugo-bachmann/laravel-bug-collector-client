@@ -1,6 +1,17 @@
 # Bug Collector — Client Laravel
 
+[![tests](https://github.com/hugo-bachmann/laravel-bug-collector-client/actions/workflows/tests.yml/badge.svg)](https://github.com/hugo-bachmann/laravel-bug-collector-client/actions/workflows/tests.yml)
+[![lint](https://github.com/hugo-bachmann/laravel-bug-collector-client/actions/workflows/lint.yml/badge.svg)](https://github.com/hugo-bachmann/laravel-bug-collector-client/actions/workflows/lint.yml)
+[![Packagist Version](https://img.shields.io/packagist/v/bug-collector/laravel-client)](https://packagist.org/packages/bug-collector/laravel-client)
+[![License](https://img.shields.io/packagist/l/bug-collector/laravel-client)](LICENSE)
+
 Client Laravel pour [Bug Collector](https://github.com/hugo-bachmann/bug-collector) : reporte automatiquement les **erreurs** et les **anomalies de performance** (requêtes HTTP, jobs, queries SQL, commandes artisan trop lentes) à un service Bug Collector centralisé.
+
+## Compatibilité
+
+| Package | PHP        | Laravel        |
+|---------|------------|----------------|
+| 1.x     | 8.2 – 8.4  | 11 · 12 · 13   |
 
 L'instrumentation et le transport sont implémentés. L'authentification se fait via le header `X-Ingest-Key` ; l'envoi est fail-safe (une panne du collecteur ne casse jamais l'app hôte) ; les seuils de performance sont configurables.
 
@@ -53,6 +64,19 @@ Pour masquer des noms supplémentaires (cookies d'auth/JWT custom), listez-les e
 - **Args de stack trace exclus** : seuls fichier / ligne / fonction / classe sont remontés.
 - **Attention aux messages d'exception et au SQL brut.** Le message d'exception (`getMessage()`) et le label des requêtes lentes sont envoyés **verbatim**. Les requêtes Eloquent gardent leurs placeholders (`?`), mais le SQL brut (`whereRaw`, `DB::raw`) et les messages d'exception peuvent contenir des littéraux sensibles — évitez d'y placer des secrets.
 - **Latence.** L'envoi est synchrone au `terminate` (après la réponse / la commande), borné par `BUG_COLLECTOR_TIMEOUT` (2 s par défaut) ; toute erreur réseau est avalée.
+
+## Développement
+
+```bash
+composer install
+composer test       # phpunit
+composer lint       # pint --test (vérifie le style)
+composer format     # pint (corrige le style)
+composer analyse    # phpstan (analyse statique, niveau 6)
+```
+
+L'intégration continue exécute la suite de tests sur la matrice PHP 8.2/8.3/8.4 ×
+Laravel 11/12/13, ainsi que Pint et PHPStan.
 
 ## Licence
 

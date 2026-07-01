@@ -15,7 +15,7 @@ Client Laravel pour [Bug Collector](https://github.com/hugo-bachmann/bug-collect
 
 L'instrumentation et le transport sont implémentés. L'authentification se fait via le header `X-Ingest-Key` ; l'envoi est fail-safe (une panne du collecteur ne casse jamais l'app hôte) ; les seuils de performance sont configurables.
 
-## Installation (cible)
+## Installation
 
 ```bash
 composer require bug-collector/laravel-client
@@ -76,7 +76,7 @@ composer analyse    # phpstan (analyse statique, niveau 6)
 ```
 
 L'intégration continue exécute la suite de tests sur la matrice PHP 8.2/8.3/8.4 ×
-Laravel 11/12/13, ainsi que Pint et PHPStan.
+Laravel 12/13, ainsi que Pint et PHPStan.
 
 ## Licence
 

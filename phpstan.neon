@@ -1,8 +1,8 @@
 includes:
     - vendor/larastan/larastan/extension.neon
     # Faux-positifs résiduels : gardes défensives (fail-safe) contre des valeurs
-    # que les types natifs du framework déclarent impossibles mais qui peuvent
-    # varier selon la version de Laravel supportée (11/12/13).
+    # que les types natifs du framework déclarent impossibles, mais que le client
+    # continue de vérifier par sécurité pour ne jamais casser l'app hôte.
     - phpstan-baseline.neon
 
 parameters:

@@ -9,9 +9,9 @@ Client Laravel pour [Bug Collector](https://github.com/hugo-bachmann/bug-collect
 
 ## Compatibilité
 
-| Package | PHP        | Laravel        |
-|---------|------------|----------------|
-| 1.x     | 8.2 – 8.4  | 11 · 12 · 13   |
+| Package | PHP        | Laravel   |
+|---------|------------|-----------|
+| 1.x     | 8.2 – 8.4  | 12 · 13   |
 
 L'instrumentation et le transport sont implémentés. L'authentification se fait via le header `X-Ingest-Key` ; l'envoi est fail-safe (une panne du collecteur ne casse jamais l'app hôte) ; les seuils de performance sont configurables.
 

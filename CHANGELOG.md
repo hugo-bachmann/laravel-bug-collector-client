@@ -12,7 +12,7 @@ désormais gelé et suivra le [versioning sémantique](https://semver.org/lang/f
 aucune rupture en 1.x.
 
 ### Ajouté
-- Intégration continue GitHub Actions : matrice PHP 8.2/8.3/8.4 × Laravel 11/12/13
+- Intégration continue GitHub Actions : matrice PHP 8.2/8.3/8.4 × Laravel 12/13
   (tests) et job de lint (Pint + PHPStan).
 - Analyse statique PHPStan / Larastan au niveau 6 (`phpstan.neon`).
 - Scripts Composer `test`, `lint`, `format`, `analyse`.
@@ -22,6 +22,12 @@ aucune rupture en 1.x.
 - Types de retour / paramètres précisés (`HandlerDecorator::__call`,
   `RequestTiming::handle`/`terminate`) pour satisfaire l'analyse statique, sans
   changement de comportement.
+
+### Retiré
+- **Support de Laravel 11** : la ligne 11.x est en fin de support sécurité et
+  n'installe plus proprement (advisories non corrigées). Contraintes portées à
+  `illuminate/* ^12|^13` et `orchestra/testbench ^10|^11`. Les apps sur Laravel 11
+  restent sur la 0.1.x.
 
 ## [0.1.2] - 2026-06-29
 

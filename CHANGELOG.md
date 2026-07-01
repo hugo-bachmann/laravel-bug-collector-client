@@ -4,6 +4,13 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.0.1] - 2026-07-01
+
+### Corrigé
+- Nettoyage de la documentation, sans aucun changement de code : retrait du
+  statut « cible » de la section Installation du README et des dernières
+  références à Laravel 11 (README, commentaire du baseline PHPStan).
+
 ## [1.0.0] - 2026-07-01
 
 Première version stable. Le contrat public (clés de `config/bug-collector.php`,
@@ -54,6 +61,7 @@ aucune rupture en 1.x.
 - Capture des cookies opt-in (désactivée par défaut, `BUG_COLLECTOR_SEND_COOKIES`) avec rédaction des cookies sensibles (session, `XSRF-TOKEN`, `remember_*`).
 - Configuration publiable (`base_url`, endpoints, seuils, kill-switches globaux et par fonctionnalité).
 
+[1.0.1]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v1.0.1
 [1.0.0]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v1.0.0
 [0.1.2]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.2
 [0.1.1]: https://github.com/hugo-bachmann/laravel-bug-collector-client/releases/tag/v0.1.1

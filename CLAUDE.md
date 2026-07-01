@@ -22,7 +22,7 @@ Tests use **Orchestra Testbench** (boots a minimal Laravel app for package testi
 
 ## Architecture
 
-- **PSR-4:** `BugCollector\Client\` → `src/`. PHP `^8.2`; supports Laravel 11/12/13 (`illuminate/*: ^11|^12|^13`).
+- **PSR-4:** `BugCollector\Client\` → `src/`. PHP `^8.2`; supports Laravel 12/13 (`illuminate/*: ^12|^13`).
 - **Entry point:** `BugCollectorServiceProvider` is auto-discovered via `extra.laravel.providers` in `composer.json` — clients don't register it manually. `register()` merges config and wires all singletons; `boot()` publishes config (tag `bug-collector-config`), registers the terminating hook (flushes the Outbox), and calls `Registrar::register()` to wire instrumentation.
 - **Config-driven kill switches:** `config/bug-collector.php` is the contract for behavior. A global `enabled` flag (boot returns early if false), plus independent `errors.enabled` and `performance.enabled`. Performance reporting is **threshold-based**: events are only sent when they exceed a per-type threshold in milliseconds (`request`/`job`/`query`/`command`). Every setting is env-overridable (`BUG_COLLECTOR_*`).
 - **Cookie capture** is opt-in (`errors.cookies`, env `BUG_COLLECTOR_SEND_COOKIES`, default `false`). When enabled, `BugPayload` redacts sensitive cookie names (session cookie, `XSRF-TOKEN`, any key starting with `remember_`) — replaced with `'[REDACTED]'`. The session cookie name is read from `session.cookie` config at report time.

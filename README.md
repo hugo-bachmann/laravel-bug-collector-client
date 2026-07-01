@@ -76,7 +76,7 @@ composer analyse    # phpstan (analyse statique, niveau 6)
 ```
 
 L'intégration continue exécute la suite de tests sur la matrice PHP 8.2/8.3/8.4 ×
-Laravel 11/12/13, ainsi que Pint et PHPStan.
+Laravel 12/13, ainsi que Pint et PHPStan.
 
 ## Licence
 

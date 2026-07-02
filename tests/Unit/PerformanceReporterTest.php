@@ -56,4 +56,50 @@ class PerformanceReporterTest extends TestCase
 
         $this->assertTrue($this->outbox()->isEmpty());
     }
+
+    public function test_empty_string_threshold_falls_back_to_default(): void
+    {
+        // Un seuil vide (ex. BUG_COLLECTOR_THRESHOLD_REQUEST= dans le .env) ne
+        // doit plus valoir 0 (= tout envoyer) mais retomber sur le défaut 2000.
+        config(['bug-collector.performance.thresholds.request' => '']);
+
+        $this->reporter()->report('request', 'GET /below', 1999);
+        $this->assertTrue($this->outbox()->isEmpty());
+
+        $this->reporter()->report('request', 'GET /above', 2500);
+        $this->assertCount(1, $this->outbox()->pending());
+    }
+
+    public function test_zero_threshold_falls_back_to_default(): void
+    {
+        config(['bug-collector.performance.thresholds.request' => 0]);
+
+        $this->reporter()->report('request', 'GET /below', 1999);
+        $this->assertTrue($this->outbox()->isEmpty());
+
+        $this->reporter()->report('request', 'GET /above', 2500);
+        $this->assertCount(1, $this->outbox()->pending());
+    }
+
+    public function test_negative_threshold_falls_back_to_default(): void
+    {
+        config(['bug-collector.performance.thresholds.request' => -5]);
+
+        $this->reporter()->report('request', 'GET /below', 1999);
+        $this->assertTrue($this->outbox()->isEmpty());
+
+        $this->reporter()->report('request', 'GET /above', 2500);
+        $this->assertCount(1, $this->outbox()->pending());
+    }
+
+    public function test_non_numeric_threshold_falls_back_to_default(): void
+    {
+        config(['bug-collector.performance.thresholds.request' => 'abc']);
+
+        $this->reporter()->report('request', 'GET /below', 1999);
+        $this->assertTrue($this->outbox()->isEmpty());
+
+        $this->reporter()->report('request', 'GET /above', 2500);
+        $this->assertCount(1, $this->outbox()->pending());
+    }
 }

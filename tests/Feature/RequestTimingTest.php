@@ -10,10 +10,14 @@ class RequestTimingTest extends TestCase
 {
     public function test_a_slow_request_is_reported(): void
     {
-        config(['bug-collector.performance.thresholds.request' => 0]); // tout qualifie
+        config(['bug-collector.performance.thresholds.request' => 1]);
         Http::fake();
 
-        Route::get('/slow', fn () => 'ok');
+        Route::get('/slow', function () {
+            usleep(2000); // durée mesurable, au-dessus du seuil de 1 ms
+
+            return 'ok';
+        });
 
         $this->get('/slow')->assertOk();
 

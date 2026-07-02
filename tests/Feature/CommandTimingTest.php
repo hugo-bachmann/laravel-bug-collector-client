@@ -14,13 +14,14 @@ class CommandTimingTest extends TestCase
 {
     public function test_a_slow_command_is_recorded(): void
     {
-        config(['bug-collector.performance.thresholds.command' => 0]);
+        config(['bug-collector.performance.thresholds.command' => 1]);
 
         $collector = $this->app->make(CommandTiming::class);
         $input = new ArrayInput([]);
         $output = new BufferedOutput;
 
         $collector->starting(new CommandStarting('app:sync', $input, $output));
+        usleep(2000); // durée mesurable, au-dessus du seuil de 1 ms
         $collector->finished(new CommandFinished('app:sync', $input, $output, 0));
 
         $pending = $this->app->make(Outbox::class)->pending();

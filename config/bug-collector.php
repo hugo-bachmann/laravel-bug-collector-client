@@ -39,7 +39,10 @@ return [
     'performance' => [
         'enabled' => env('BUG_COLLECTOR_PERF_ENABLED', true),
 
-        // Seuils en millisecondes. En dessous, rien n'est envoyé.
+        // Seuils en millisecondes : en dessous, rien n'est envoyé. `false` (ou
+        // null) désactive complètement un type. Toute valeur invalide — vide,
+        // non numérique, 0 ou négative — retombe sur le défaut du type au lieu
+        // de désactiver le filtre (garde-fou anti-inondation du collecteur).
         'thresholds' => [
             'request' => env('BUG_COLLECTOR_THRESHOLD_REQUEST', 2000),
             'job' => env('BUG_COLLECTOR_THRESHOLD_JOB', 30000),

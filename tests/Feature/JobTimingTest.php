@@ -17,7 +17,7 @@ class JobTimingTest extends TestCase
 
     public function test_a_slow_job_is_reported_and_flushed_immediately(): void
     {
-        config(['bug-collector.performance.thresholds.job' => 0]);
+        config(['bug-collector.performance.thresholds.job' => 1]);
         Http::fake();
 
         $job = Mockery::mock(Job::class);
@@ -26,6 +26,7 @@ class JobTimingTest extends TestCase
 
         $collector = $this->app->make(JobTiming::class);
         $collector->processing(new JobProcessing('sync', $job));
+        usleep(2000); // durée mesurable, au-dessus du seuil de 1 ms
         $collector->processed(new JobProcessed('sync', $job));
 
         Http::assertSent(function ($request) {

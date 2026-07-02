@@ -4,6 +4,23 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.1.0] - 2026-07-02
+
+### Corrigé
+- Un seuil de performance mal configuré ne désactive plus silencieusement le
+  filtrage. Une valeur vide (typiquement `BUG_COLLECTOR_THRESHOLD_REQUEST=` dans
+  le `.env`), non numérique, `0` ou négative était castée en `0` : `durée < 0`
+  étant toujours faux, **toutes** les mesures passaient et inondaient le
+  collecteur d'évènements « lents » à 100–300 ms. Ces valeurs retombent
+  désormais sur le défaut du type.
+
+### Modifié
+- `PerformanceReporter` valide le seuil configuré avant de l'appliquer :
+  `false`/`null` désactivent un type (inchangé), un nombre ≥ 1 est utilisé tel
+  quel, et toute autre valeur retombe sur le défaut intégré (`request` 2000,
+  `job` 30000, `query` 1000, `command` 60000 ms). Conséquence : `0` ne signifie
+  plus « tout envoyer » mais « valeur invalide → défaut ».
+
 ## [1.0.1] - 2026-07-01
 
 ### Corrigé

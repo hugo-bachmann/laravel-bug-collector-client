@@ -4,6 +4,20 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.2.0] - 2026-09-21
+
+### Corrigé
+- Les commandes longue durée (démons) ne remontent plus comme « commandes
+  lentes » : leur durée mesurée était leur uptime (ex. `inertia:start-ssr` à
+  9 jours à chaque redéploiement).
+
+### Ajouté
+- Option `performance.ignore_commands` : commandes jamais chronométrées. Défaut :
+  `inertia:start-ssr`, `queue:work`, `queue:listen`, `schedule:work`,
+  `pulse:check`, `pulse:work`, `reverb:start`, `horizon`, `horizon:supervisor`,
+  `horizon:work`, `horizon:listen`, `octane:start`. Une config publiée doit
+  recopier la clé (fusion de config au premier niveau seulement).
+
 ## [1.1.0] - 2026-07-02
 
 ### Corrigé

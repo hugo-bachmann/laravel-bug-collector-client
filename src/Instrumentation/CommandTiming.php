@@ -5,6 +5,7 @@ namespace BugCollector\Client\Instrumentation;
 use BugCollector\Client\Reporting\PerformanceReporter;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Config\Repository;
 
 /** Mesure la durée des commandes artisan et reporte celles dépassant le seuil configuré. */
 class CommandTiming
@@ -12,11 +13,16 @@ class CommandTiming
     /** @var array<string, float> */
     private array $started = [];
 
-    public function __construct(private PerformanceReporter $reporter) {}
+    public function __construct(
+        private PerformanceReporter $reporter,
+        private Repository $config,
+    ) {}
 
     public function starting(CommandStarting $event): void
     {
-        if ($event->command !== null) {
+        $ignored = (array) $this->config->get('bug-collector.performance.ignore_commands', []);
+
+        if ($event->command !== null && ! in_array($event->command, $ignored, true)) {
             $this->started[$event->command] = microtime(true);
         }
     }

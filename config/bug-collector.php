@@ -49,6 +49,23 @@ return [
             'query' => env('BUG_COLLECTOR_THRESHOLD_QUERY', 1000),
             'command' => env('BUG_COLLECTOR_THRESHOLD_COMMAND', 60000),
         ],
+
+        // Commandes longue durée (démons) : leur « durée » est leur uptime,
+        // pas une lenteur. Elles ne sont jamais chronométrées.
+        'ignore_commands' => [
+            'inertia:start-ssr',
+            'queue:work',
+            'queue:listen',
+            'schedule:work',
+            'pulse:check',
+            'pulse:work',
+            'reverb:start',
+            'horizon',
+            'horizon:supervisor',
+            'horizon:work',
+            'horizon:listen',
+            'octane:start',
+        ],
     ],
 
 ];

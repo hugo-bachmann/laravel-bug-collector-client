@@ -47,6 +47,8 @@ Voir `config/bug-collector.php` pour les seuils de performance (en millisecondes
 | `query`   | 1000 ms  |
 | `command` | 60000 ms |
 
+Les commandes longue durée (démons : `inertia:start-ssr`, `queue:work`, `horizon:work`, `schedule:work`…) ne sont jamais chronométrées : leur « durée » serait leur uptime. Liste dans `performance.ignore_commands`. Si vous avez publié la config, recopiez-y cette clé (la fusion de config ne descend pas sous `performance`).
+
 ## Cookies
 
 La capture des cookies est **désactivée par défaut** (opt-in via `BUG_COLLECTOR_SEND_COOKIES=true`). Quand elle est activée, sont automatiquement remplacés par `[REDACTED]` :

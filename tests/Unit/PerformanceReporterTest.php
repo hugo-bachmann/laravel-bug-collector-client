@@ -122,4 +122,26 @@ class PerformanceReporterTest extends TestCase
             );
         }
     }
+
+    public function test_context_closure_is_not_called_under_threshold(): void
+    {
+        config(['bug-collector.performance.thresholds.query' => 1000]);
+
+        $this->reporter()->report('query', 'select 1', 10, function () {
+            throw new \RuntimeException('ne doit pas être appelée');
+        });
+
+        $this->assertTrue($this->outbox()->isEmpty());
+    }
+
+    public function test_throwing_context_closure_above_threshold_is_swallowed(): void
+    {
+        config(['bug-collector.performance.thresholds.query' => 1]);
+
+        $this->reporter()->report('query', 'select 1', 10, function () {
+            throw new \RuntimeException('boom');
+        });
+
+        $this->assertTrue($this->outbox()->isEmpty());
+    }
 }

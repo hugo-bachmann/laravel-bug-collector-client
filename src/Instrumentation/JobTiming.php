@@ -16,14 +16,23 @@ class JobTiming
     /** @var array<string, float> */
     private array $started = [];
 
+    private ?string $currentJob = null;
+
     public function __construct(
         private PerformanceReporter $reporter,
         private Outbox $outbox,
         private Transport $transport,
     ) {}
 
+    /** Nom du job en cours d'exécution, ou null hors job. */
+    public function currentJob(): ?string
+    {
+        return $this->currentJob;
+    }
+
     public function processing(JobProcessing $event): void
     {
+        $this->currentJob = $event->job->resolveName();
         $this->started[$event->job->getJobId()] = microtime(true);
     }
 
@@ -39,6 +48,7 @@ class JobTiming
 
     private function finish(Job $job): void
     {
+        $this->currentJob = null;
         $id = $job->getJobId();
 
         if (! isset($this->started[$id])) {

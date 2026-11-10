@@ -5,7 +5,9 @@ namespace BugCollector\Client\Instrumentation;
 use BugCollector\Client\Reporting\PerformanceReporter;
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 /** Middleware mesurant la durée des requêtes HTTP et reportant celles dépassant le seuil configuré. */
@@ -27,7 +29,9 @@ class RequestTiming
         try {
             $start = $request->attributes->get(self::START_KEY);
 
-            if ($start === null) {
+            // Fichiers, streams et SSE : la durée mesurée inclut l'envoi au
+            // client (débit réseau), pas une lenteur de l'app.
+            if ($start === null || $response instanceof BinaryFileResponse || $response instanceof StreamedResponse) {
                 return;
             }
 

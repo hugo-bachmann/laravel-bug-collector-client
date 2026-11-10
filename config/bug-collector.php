@@ -33,6 +33,18 @@ return [
         'redact_cookies' => env('BUG_COLLECTOR_REDACT_COOKIES', ''),
     ],
 
+    // Exceptions jamais envoyées (instanceof : sous-classes comprises). Chaînes,
+    // pas ::class, car la classe peut ne pas exister (Livewire non installé).
+    'ignore' => [
+        // Livewire : bots qui rejouent /livewire/update, onglets restés ouverts
+        // pendant un déploiement, changement d'APP_KEY, propriétés trafiquées.
+        'Livewire\Mechanisms\HandleComponents\CorruptComponentPayloadException',
+        'Livewire\Exceptions\ComponentNotFoundException',
+        'Livewire\Exceptions\MethodNotFoundException',
+        'Livewire\Exceptions\PublicPropertyNotFoundException',
+        'Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException',
+    ],
+
     // Nombre maximum de payloads bufferisés par cycle, garde-fou anti N+1.
     'max_buffer' => env('BUG_COLLECTOR_MAX_BUFFER', 100),
 

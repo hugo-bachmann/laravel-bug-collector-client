@@ -30,6 +30,21 @@ class ErrorReportingTest extends TestCase
         });
     }
 
+    public function test_reported_payload_has_class_and_relative_file(): void
+    {
+        $this->app->setBasePath(dirname(__DIR__, 2));
+        Http::fake();
+
+        Route::get('/boom', function () {
+            throw new RuntimeException('Kaboom');
+        });
+
+        $this->get('/boom');
+
+        Http::assertSent(fn ($request) => $request['class'] === RuntimeException::class
+            && $request['file'] === 'tests/Feature/ErrorReportingTest.php');
+    }
+
     public function test_ignored_exception_is_not_sent(): void
     {
         $this->throwWithIgnoredLogicException(new LogicException('Ignored'));

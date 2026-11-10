@@ -34,6 +34,13 @@ class ErrorReporter
             return;
         }
 
+        // Exceptions ignorées par config (ex. payload Livewire corrompu).
+        foreach ((array) $this->config->get('bug-collector.ignore', []) as $class) {
+            if (is_string($class) && $e instanceof $class) {
+                return;
+            }
+        }
+
         if (! $this->gate->shouldReportErrors()) {
             return;
         }

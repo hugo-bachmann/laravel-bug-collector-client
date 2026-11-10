@@ -4,6 +4,22 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2026-11-10
+
+### Ajouté
+- Option `ignore` : classes d'exceptions jamais envoyées (`instanceof`, sous-classes
+  comprises). Défaut : les exceptions Livewire déclenchées par des bots, des
+  onglets ouverts pendant un déploiement ou un changement d'`APP_KEY`
+  (`CorruptComponentPayloadException`, `ComponentNotFoundException`,
+  `MethodNotFoundException`, `PublicPropertyNotFoundException`,
+  `CannotUpdateLockedPropertyException`), référencées par chaîne car Livewire
+  est optionnel.
+
+### Corrigé
+- Les téléchargements de fichiers (`BinaryFileResponse`) et réponses streamées
+  (`StreamedResponse` : stream, streamDownload, SSE) ne remontent plus comme
+  « requêtes lentes » : leur durée mesurée incluait l'envoi au client.
+
 ## [1.2.0] - 2026-09-21
 
 ### Corrigé

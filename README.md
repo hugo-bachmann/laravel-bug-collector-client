@@ -49,6 +49,12 @@ Voir `config/bug-collector.php` pour les seuils de performance (en millisecondes
 
 Les commandes longue durée (démons : `inertia:start-ssr`, `queue:work`, `horizon:work`, `schedule:work`…) ne sont jamais chronométrées : leur « durée » serait leur uptime. Liste dans `performance.ignore_commands`. Si vous avez publié la config, recopiez-y cette clé (la fusion de config ne descend pas sous `performance`).
 
+Les téléchargements de fichiers et les réponses streamées (`response()->download()`, `->stream()`, `->streamDownload()`, SSE) ne sont pas chronométrés : leur durée dépend du débit du client.
+
+Les exceptions exclues par l'app hôte (`$exceptions->dontReport(...)` / `->ignore(...)` dans `bootstrap/app.php`) ne sont jamais envoyées : le client ne remonte que ce que `shouldReport()` du handler accepte.
+
+L'option `ignore` liste en plus des classes d'exceptions jamais envoyées (`instanceof`, sous-classes comprises). Défaut : les exceptions Livewire déclenchées par des bots, des onglets ouverts pendant un déploiement ou un changement d'`APP_KEY` (`CorruptComponentPayloadException`, `ComponentNotFoundException`, `MethodNotFoundException`, `PublicPropertyNotFoundException`, `CannotUpdateLockedPropertyException`). Si vous définissez `ignore` dans une config publiée, elle remplace la liste par défaut : recopiez-y la classe Livewire.
+
 ## Cookies
 
 La capture des cookies est **désactivée par défaut** (opt-in via `BUG_COLLECTOR_SEND_COOKIES=true`). Quand elle est activée, sont automatiquement remplacés par `[REDACTED]` :

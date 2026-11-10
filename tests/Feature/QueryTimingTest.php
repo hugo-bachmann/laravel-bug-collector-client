@@ -57,4 +57,12 @@ class QueryTimingTest extends TestCase
             ['file' => '/app/app/Foo.php', 'line' => 9],
         ], '/app'));
     }
+
+    public function test_caller_ignores_entry_points(): void
+    {
+        $vendor = ['file' => '/app/vendor/x/Y.php', 'line' => 1];
+
+        $this->assertNull(QueryTiming::callerFrom([$vendor, ['file' => '/app/artisan', 'line' => 35]], '/app'));
+        $this->assertNull(QueryTiming::callerFrom([$vendor, ['file' => '/app/public/index.php', 'line' => 20]], '/app'));
+    }
 }

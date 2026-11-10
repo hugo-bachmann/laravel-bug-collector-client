@@ -7,6 +7,7 @@ projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 ## [1.4.0] - 2026-11-10
 
 **Mise à jour : déployer d'abord la version du serveur Bug Collector qui accepte `class` et `previous`, puis ce client.**
+
 **Les empreintes (fingerprints) des erreurs changent une seule fois** (classe ajoutée,
 chemins relatifs) : les erreurs existantes réapparaîtront comme nouvelles.
 
@@ -22,7 +23,8 @@ chemins relatifs) : les erreurs existantes réapparaîtront comme nouvelles.
 ### Modifié
 - Les chemins de fichiers des erreurs (`file`, `previous[*].file`, `stackTrace[*].file`)
   sont relatifs à la racine du projet.
-- `Transport::send()` retourne un `bool` (vrai seulement sur 2xx) ; `Outbox::flush()`
+- `Transport::send()` retourne un `bool` (vrai seulement sur 2xx) : une implémentation
+  personnalisée de `Transport` doit adapter sa signature ; `Outbox::flush()`
   s'arrête au premier échec et abandonne le reste du lot (collecteur en panne :
   plus de N × timeout).
 - `RequestTiming` mesure depuis `REQUEST_TIME_FLOAT` (repli sur l'entrée du middleware

@@ -190,4 +190,27 @@ class BugPayloadTest extends TestCase
 
         $this->assertSame(__FILE__, $payload['file']);
     }
+
+    public function test_truncation_never_cuts_a_multibyte_character(): void
+    {
+        $long = 'a'.str_repeat('é', 600);
+        $e = new RuntimeException($long, 0, new RuntimeException($long));
+
+        $payload = BugPayload::fromThrowable($e, null);
+
+        $this->assertTrue(mb_check_encoding($payload['message'], 'UTF-8'));
+        $this->assertTrue(mb_check_encoding($payload['previous'][0]['message'], 'UTF-8'));
+        json_encode($payload, JSON_THROW_ON_ERROR);
+    }
+
+    public function test_anonymous_class_name_is_cut_at_the_nul_byte(): void
+    {
+        $e = new class('x', 0, new class('y') extends RuntimeException {}) extends RuntimeException {};
+
+        $payload = BugPayload::fromThrowable($e, null);
+
+        $this->assertSame('RuntimeException@anonymous', $payload['class']);
+        $this->assertSame('RuntimeException@anonymous', $payload['previous'][0]['class']);
+        $this->assertStringNotContainsString("\0", $payload['class'].$payload['previous'][0]['class']);
+    }
 }

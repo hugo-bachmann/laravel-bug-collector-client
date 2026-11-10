@@ -37,4 +37,12 @@ class PerfPayloadTest extends TestCase
 
         $this->assertSame(0, $payload['duration_ms']);
     }
+
+    public function test_label_truncation_never_cuts_a_multibyte_character(): void
+    {
+        $payload = PerfPayload::make('query', 'a'.str_repeat('é', 600), 1200);
+
+        $this->assertTrue(mb_check_encoding($payload['label'], 'UTF-8'));
+        json_encode($payload, JSON_THROW_ON_ERROR);
+    }
 }

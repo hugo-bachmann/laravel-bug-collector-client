@@ -22,7 +22,7 @@ class BugPayload
         array $redactCookieNames = [],
         string $basePath = '',
     ): array {
-        $message = substr($e->getMessage(), 0, 1000);
+        $message = mb_strcut($e->getMessage(), 0, 1000, 'UTF-8');
 
         if ($request !== null && $includeCookies) {
             $cookies = self::redactCookies($request->cookies->all(), $redactCookieNames);
@@ -31,16 +31,16 @@ class BugPayload
         }
 
         return [
-            'message' => $message !== '' ? $message : $e::class,
+            'message' => $message !== '' ? $message : self::className($e),
             'type' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
-            'class' => substr($e::class, 0, 255),
+            'class' => mb_strcut(self::className($e), 0, 255, 'UTF-8'),
             'previous' => self::previousChain($e, $basePath),
-            'file' => substr(self::relativePath($e->getFile(), $basePath), 0, 1000),
+            'file' => mb_strcut(self::relativePath($e->getFile(), $basePath), 0, 1000, 'UTF-8'),
             'line' => $e->getLine(),
             'stackTrace' => self::trace($e, $traceDepth, $basePath),
-            'url' => $request ? substr(self::redactUrl($request->fullUrl()), 0, 2000) : 'console',
+            'url' => $request ? mb_strcut(self::redactUrl($request->fullUrl()), 0, 2000, 'UTF-8') : 'console',
             'ip' => ($request?->ip()) ?: '127.0.0.1',
-            'userAgent' => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
+            'userAgent' => ($ua = $request?->userAgent()) !== null ? mb_strcut($ua, 0, 1000, 'UTF-8') : null,
             'username' => self::userAttr($request, 'name'),
             'userEmail' => self::userAttr($request, 'email'),
             'cookies' => $cookies,
@@ -142,6 +142,14 @@ class BugPayload
         return substr($path, strlen($prefix));
     }
 
+    /** Nom de classe sans le suffixe NUL + chemin absolu des classes anonymes. */
+    private static function className(Throwable $e): string
+    {
+        $class = $e::class;
+
+        return strstr($class, "\0", true) ?: $class;
+    }
+
     /**
      * Chaîne des causes (getPrevious), plafonnée à 5 maillons (borne aussi les cycles).
      *
@@ -153,9 +161,9 @@ class BugPayload
 
         for ($p = $e->getPrevious(); $p !== null && count($chain) < 5; $p = $p->getPrevious()) {
             $chain[] = [
-                'class' => substr($p::class, 0, 255),
-                'message' => substr($p->getMessage(), 0, 1000),
-                'file' => substr(self::relativePath($p->getFile(), $basePath), 0, 1000),
+                'class' => mb_strcut(self::className($p), 0, 255, 'UTF-8'),
+                'message' => mb_strcut($p->getMessage(), 0, 1000, 'UTF-8'),
+                'file' => mb_strcut(self::relativePath($p->getFile(), $basePath), 0, 1000, 'UTF-8'),
                 'line' => $p->getLine(),
             ];
         }
@@ -187,7 +195,7 @@ class BugPayload
             $user = $request?->user();
             $value = $user?->{$attr} ?? null;
 
-            return $value === null ? null : substr((string) $value, 0, 255);
+            return $value === null ? null : mb_strcut((string) $value, 0, 255, 'UTF-8');
         } catch (Throwable) {
             return null;
         }

@@ -55,7 +55,14 @@ class QueryTiming
                 continue;
             }
 
-            return BugPayload::relativePath($file, $basePath).':'.($frame['line'] ?? 0);
+            $relative = BugPayload::relativePath($file, $basePath);
+
+            // Points d'entrée : aucune info utile sur l'appelant.
+            if ($relative === 'artisan' || $relative === 'public/index.php') {
+                continue;
+            }
+
+            return $relative.':'.($frame['line'] ?? 0);
         }
 
         return null;

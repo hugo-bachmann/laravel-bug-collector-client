@@ -6,6 +6,7 @@ use BugCollector\Client\Outbox;
 use BugCollector\Client\Reporting\PerformanceReporter;
 use BugCollector\Client\Transport\Transport;
 use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -37,6 +38,12 @@ class JobTiming
     }
 
     public function processed(JobProcessed $event): void
+    {
+        $this->finish($event->job);
+    }
+
+    /** Une tentative a levé une exception (job relâché ou en échec) : on termine sa mesure. */
+    public function exceptionOccurred(JobExceptionOccurred $event): void
     {
         $this->finish($event->job);
     }

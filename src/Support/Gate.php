@@ -13,15 +13,33 @@ class Gate
      */
     public function enabled(): bool
     {
+        return $this->disabledReason() === null;
+    }
+
+    /**
+     * Raison pour laquelle le client est désactivé, ou null s'il est actif.
+     */
+    public function disabledReason(): ?string
+    {
         if (! $this->config->get('bug-collector.enabled', true)) {
-            return false;
+            return 'BUG_COLLECTOR_ENABLED est à false.';
         }
 
         $baseUrl = (string) $this->config->get('bug-collector.base_url');
 
-        return $baseUrl !== ''
-            && ! empty($this->config->get('bug-collector.ingest_key'))
-            && $this->isSecureBaseUrl($baseUrl);
+        if ($baseUrl === '') {
+            return 'BUG_COLLECTOR_URL est manquant.';
+        }
+
+        if (empty($this->config->get('bug-collector.ingest_key'))) {
+            return 'BUG_COLLECTOR_INGEST_KEY est manquant.';
+        }
+
+        if (! $this->isSecureBaseUrl($baseUrl)) {
+            return 'BUG_COLLECTOR_URL doit être en HTTPS (http toléré uniquement sur localhost).';
+        }
+
+        return null;
     }
 
     /**

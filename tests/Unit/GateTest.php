@@ -71,4 +71,24 @@ class GateTest extends TestCase
         config(['bug-collector.base_url' => 'http://127.0.0.1:8080']);
         $this->assertTrue($this->gate()->enabled());
     }
+
+    public function test_disabled_reason_messages(): void
+    {
+        $this->assertNull($this->gate()->disabledReason());
+
+        config(['bug-collector.enabled' => false]);
+        $this->assertSame('BUG_COLLECTOR_ENABLED est à false.', $this->gate()->disabledReason());
+
+        config(['bug-collector.enabled' => true, 'bug-collector.base_url' => '']);
+        $this->assertSame('BUG_COLLECTOR_URL est manquant.', $this->gate()->disabledReason());
+
+        config(['bug-collector.base_url' => 'https://collector.test', 'bug-collector.ingest_key' => '']);
+        $this->assertSame('BUG_COLLECTOR_INGEST_KEY est manquant.', $this->gate()->disabledReason());
+
+        config(['bug-collector.ingest_key' => 'k', 'bug-collector.base_url' => 'http://collector.test']);
+        $this->assertSame(
+            'BUG_COLLECTOR_URL doit être en HTTPS (http toléré uniquement sur localhost).',
+            $this->gate()->disabledReason()
+        );
+    }
 }

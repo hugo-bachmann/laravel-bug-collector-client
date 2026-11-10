@@ -2,6 +2,7 @@
 
 namespace BugCollector\Client;
 
+use BugCollector\Client\Console\TestCommand;
 use BugCollector\Client\Instrumentation\CommandTiming;
 use BugCollector\Client\Instrumentation\HandlerDecorator;
 use BugCollector\Client\Instrumentation\JobTiming;
@@ -48,6 +49,11 @@ class BugCollectorServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/bug-collector.php' => config_path('bug-collector.php'),
         ], 'bug-collector-config');
+
+        // Enregistrée avant le coupe-circuit : elle sert justement à diagnostiquer une config désactivée.
+        if ($this->app->runningInConsole()) {
+            $this->commands([TestCommand::class]);
+        }
 
         if (! $this->app->make(Gate::class)->enabled()) {
             return;

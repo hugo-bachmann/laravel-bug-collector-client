@@ -118,7 +118,7 @@ class PerformanceReporterTest extends TestCase
 
             $this->assertTrue(
                 $this->outbox()->isEmpty(),
-                "Un 208 ms a fui avec un seuil de ".var_export($threshold, true),
+                'Un 208 ms a fui avec un seuil de '.var_export($threshold, true),
             );
         }
     }

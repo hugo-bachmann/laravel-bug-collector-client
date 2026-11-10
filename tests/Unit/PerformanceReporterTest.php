@@ -102,4 +102,46 @@ class PerformanceReporterTest extends TestCase
         $this->reporter()->report('request', 'GET /above', 2500);
         $this->assertCount(1, $this->outbox()->pending());
     }
+
+    /**
+     * Reproduction EXACTE de la prod Humatis : seuil request = 10000 ms, une
+     * requête mesurée à 208 ms. Rien ne doit être enregistré. Testé aussi avec
+     * le seuil sous forme de string ("10000") car les valeurs d'env arrivent
+     * toujours en string.
+     */
+    public function test_prod_scenario_208ms_request_with_10000_threshold_is_ignored(): void
+    {
+        foreach ([10000, '10000'] as $threshold) {
+            config(['bug-collector.performance.thresholds.request' => $threshold]);
+
+            $this->reporter()->report('request', 'home', 208);
+
+            $this->assertTrue(
+                $this->outbox()->isEmpty(),
+                'Un 208 ms a fui avec un seuil de '.var_export($threshold, true),
+            );
+        }
+    }
+
+    public function test_context_closure_is_not_called_under_threshold(): void
+    {
+        config(['bug-collector.performance.thresholds.query' => 1000]);
+
+        $this->reporter()->report('query', 'select 1', 10, function () {
+            throw new \RuntimeException('ne doit pas être appelée');
+        });
+
+        $this->assertTrue($this->outbox()->isEmpty());
+    }
+
+    public function test_throwing_context_closure_above_threshold_is_swallowed(): void
+    {
+        config(['bug-collector.performance.thresholds.query' => 1]);
+
+        $this->reporter()->report('query', 'select 1', 10, function () {
+            throw new \RuntimeException('boom');
+        });
+
+        $this->assertTrue($this->outbox()->isEmpty());
+    }
 }

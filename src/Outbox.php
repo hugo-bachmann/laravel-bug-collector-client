@@ -46,7 +46,11 @@ class Outbox
         $this->seenKeys = [];
 
         foreach ($items as $item) {
-            $transport->send($item['path'], $item['payload']);
+            // Coupe-circuit : collecteur injoignable, on abandonne le reste du lot
+            // (pas de remise en file) plutôt que d'attendre N × timeout.
+            if (! $transport->send($item['path'], $item['payload'])) {
+                break;
+            }
         }
     }
 

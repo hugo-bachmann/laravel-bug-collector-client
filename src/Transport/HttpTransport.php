@@ -13,19 +13,22 @@ class HttpTransport implements Transport
         private Repository $config,
     ) {}
 
-    public function send(string $path, array $payload): void
+    public function send(string $path, array $payload): bool
     {
         try {
             $base = rtrim((string) $this->config->get('bug-collector.base_url'), '/');
 
-            $this->http
+            return $this->http
                 ->timeout((int) $this->config->get('bug-collector.timeout', 2))
                 ->acceptJson()
                 ->withHeaders(['X-Ingest-Key' => (string) $this->config->get('bug-collector.ingest_key')])
-                ->post($base.$path, $payload);
+                ->post($base.$path, $payload)
+                ->successful();
         } catch (Throwable) {
             // Fail-safe silencieux total : une panne du collecteur ne doit
             // jamais impacter l'app hôte.
+
+            return false;
         }
     }
 }

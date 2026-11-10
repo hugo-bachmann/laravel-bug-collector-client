@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -43,6 +44,7 @@ class Registrar
 
         $events->listen(JobProcessing::class, [JobTiming::class, 'processing']);
         $events->listen(JobProcessed::class, [JobTiming::class, 'processed']);
+        $events->listen(JobExceptionOccurred::class, [JobTiming::class, 'exceptionOccurred']);
         $events->listen(JobFailed::class, [JobTiming::class, 'failed']);
 
         $events->listen(QueryExecuted::class, [QueryTiming::class, 'handle']);

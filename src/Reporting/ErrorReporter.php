@@ -55,7 +55,7 @@ class ErrorReporter
 
             $this->outbox->record(
                 (string) $this->config->get('bug-collector.endpoints.errors'),
-                BugPayload::fromThrowable($e, $this->currentRequest(), $depth, $includeCookies, $redact),
+                BugPayload::fromThrowable($e, $this->currentRequest(), $depth, $includeCookies, $redact, base_path()),
             );
         } catch (Throwable) {
             // Sécurité : on n'impacte jamais l'app hôte.

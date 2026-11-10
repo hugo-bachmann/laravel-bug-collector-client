@@ -20,8 +20,9 @@ class BugPayload
         int $traceDepth = 50,
         bool $includeCookies = false,
         array $redactCookieNames = [],
+        string $basePath = '',
     ): array {
-        $message = substr($e->getMessage(), 0, 1000);
+        $message = mb_strcut($e->getMessage(), 0, 1000, 'UTF-8');
 
         if ($request !== null && $includeCookies) {
             $cookies = self::redactCookies($request->cookies->all(), $redactCookieNames);
@@ -30,14 +31,16 @@ class BugPayload
         }
 
         return [
-            'message' => $message !== '' ? $message : $e::class,
+            'message' => $message !== '' ? $message : self::className($e),
             'type' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
-            'file' => substr($e->getFile(), 0, 1000),
+            'class' => mb_strcut(self::className($e), 0, 255, 'UTF-8'),
+            'previous' => self::previousChain($e, $basePath),
+            'file' => mb_strcut(self::relativePath($e->getFile(), $basePath), 0, 1000, 'UTF-8'),
             'line' => $e->getLine(),
-            'stackTrace' => self::trace($e, $traceDepth),
-            'url' => $request ? substr(self::redactUrl($request->fullUrl()), 0, 2000) : 'console',
+            'stackTrace' => self::trace($e, $traceDepth, $basePath),
+            'url' => $request ? mb_strcut(self::redactUrl($request->fullUrl()), 0, 2000, 'UTF-8') : 'console',
             'ip' => ($request?->ip()) ?: '127.0.0.1',
-            'userAgent' => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
+            'userAgent' => ($ua = $request?->userAgent()) !== null ? mb_strcut($ua, 0, 1000, 'UTF-8') : null,
             'username' => self::userAttr($request, 'name'),
             'userEmail' => self::userAttr($request, 'email'),
             'cookies' => $cookies,
@@ -127,18 +130,59 @@ class BugPayload
         return $scheme.$host.$port.$path.'?'.$rebuilt.$fragment;
     }
 
+    /** Rend $path relatif à $basePath s'il en dépend, sinon le retourne tel quel. */
+    public static function relativePath(string $path, string $basePath): string
+    {
+        $prefix = rtrim($basePath, '/').'/';
+
+        if ($basePath === '' || ! str_starts_with($path, $prefix)) {
+            return $path;
+        }
+
+        return substr($path, strlen($prefix));
+    }
+
+    /** Nom de classe sans le suffixe NUL + chemin absolu des classes anonymes. */
+    private static function className(Throwable $e): string
+    {
+        $class = $e::class;
+
+        return strstr($class, "\0", true) ?: $class;
+    }
+
+    /**
+     * Chaîne des causes (getPrevious), plafonnée à 5 maillons (borne aussi les cycles).
+     *
+     * @return list<array{class: string, message: string, file: string, line: int}>
+     */
+    private static function previousChain(Throwable $e, string $basePath): array
+    {
+        $chain = [];
+
+        for ($p = $e->getPrevious(); $p !== null && count($chain) < 5; $p = $p->getPrevious()) {
+            $chain[] = [
+                'class' => mb_strcut(self::className($p), 0, 255, 'UTF-8'),
+                'message' => mb_strcut($p->getMessage(), 0, 1000, 'UTF-8'),
+                'file' => mb_strcut(self::relativePath($p->getFile(), $basePath), 0, 1000, 'UTF-8'),
+                'line' => $p->getLine(),
+            ];
+        }
+
+        return $chain;
+    }
+
     /**
      * Frames file/line/function/class uniquement — les args sont volontairement
      * exclus (volume + données sensibles).
      *
      * @return array<int, array<string, mixed>>
      */
-    private static function trace(Throwable $e, int $depth): array
+    private static function trace(Throwable $e, int $depth, string $basePath): array
     {
         $frames = array_slice($e->getTrace(), 0, max(0, $depth));
 
         return array_map(static fn (array $frame): array => [
-            'file' => $frame['file'] ?? null,
+            'file' => isset($frame['file']) ? self::relativePath($frame['file'], $basePath) : null,
             'line' => $frame['line'] ?? null,
             'function' => $frame['function'] ?? null,
             'class' => $frame['class'] ?? null,
@@ -151,7 +195,7 @@ class BugPayload
             $user = $request?->user();
             $value = $user?->{$attr} ?? null;
 
-            return $value === null ? null : substr((string) $value, 0, 255);
+            return $value === null ? null : mb_strcut((string) $value, 0, 255, 'UTF-8');
         } catch (Throwable) {
             return null;
         }

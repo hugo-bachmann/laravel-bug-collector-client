@@ -4,6 +4,37 @@ Toutes les modifications notables de ce package sont documentées dans ce fichie
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 projet respecte le [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.4.0] - 2026-11-10
+
+**Mise à jour : déployer d'abord la version du serveur Bug Collector qui accepte `class` et `previous`, puis ce client.**
+
+**Les empreintes (fingerprints) des erreurs changent une seule fois** (classe ajoutée,
+chemins relatifs) : les erreurs existantes réapparaîtront comme nouvelles.
+
+### Ajouté
+- Commande `php artisan bug-collector:test` : diagnostique la configuration (raison
+  exacte de désactivation), envoie une exception de test directement, code de sortie 0/1.
+- Payload d'erreur : `class` et `previous` (chaîne des causes, 5 maillons max,
+  `{class, message, file, line}`, sans arguments).
+- Requêtes SQL lentes : `context` avec `connection`, `origin` (job, `METHOD route-uri`
+  ou commande artisan, jamais l'argv complet) et `caller` (premier appelant hors
+  vendor/package, `chemin/relatif.php:ligne`), calculés seulement au-dessus du seuil.
+
+### Modifié
+- Les chemins de fichiers des erreurs (`file`, `previous[*].file`, `stackTrace[*].file`)
+  sont relatifs à la racine du projet.
+- `Transport::send()` retourne un `bool` (vrai seulement sur 2xx) : une implémentation
+  personnalisée de `Transport` doit adapter sa signature ; `Outbox::flush()`
+  s'arrête au premier échec et abandonne le reste du lot (collecteur en panne :
+  plus de N × timeout).
+- `RequestTiming` mesure depuis `REQUEST_TIME_FLOAT` (repli sur l'entrée du middleware
+  si absent, non numérique, dans le futur ou vieux de plus de 3600 s) jusqu'à la
+  construction de la réponse, entièrement dans `handle()` (plus de `terminate()`).
+
+### Corrigé
+- `JobExceptionOccurred` termine la mesure de la tentative : un job lent relancé
+  produit un événement par tentative lente.
+
 ## [1.3.0] - 2026-11-10
 
 ### Ajouté

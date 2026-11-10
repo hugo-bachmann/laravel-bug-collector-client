@@ -14,7 +14,7 @@ class PerfPayload
     {
         return [
             'kind' => $kind,
-            'label' => substr($label, 0, 1000),
+            'label' => mb_strcut($label, 0, 1000, 'UTF-8'),
             'duration_ms' => max(0, $durationMs),
             'context' => $context,
         ];

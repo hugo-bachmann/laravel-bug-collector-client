@@ -4,6 +4,7 @@ namespace BugCollector\Client\Tests\Unit;
 
 use BugCollector\Client\Tests\TestCase;
 use BugCollector\Client\Transport\HttpTransport;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 class HttpTransportTest extends TestCase
@@ -44,5 +45,26 @@ class HttpTransportTest extends TestCase
         $this->transport()->send('/api/laravel-bugs/add', ['message' => 'Boom']);
 
         $this->assertTrue(true);
+    }
+
+    public function test_send_returns_true_on_2xx(): void
+    {
+        Http::fake(['*' => Http::response('', 202)]);
+
+        $this->assertTrue($this->transport()->send('/x', ['a' => 1]));
+    }
+
+    public function test_send_returns_false_on_server_error(): void
+    {
+        Http::fake(['*' => Http::response('', 500)]);
+
+        $this->assertFalse($this->transport()->send('/x', ['a' => 1]));
+    }
+
+    public function test_send_returns_false_on_connection_error(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('down'));
+
+        $this->assertFalse($this->transport()->send('/x', ['a' => 1]));
     }
 }

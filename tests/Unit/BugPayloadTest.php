@@ -148,4 +148,69 @@ class BugPayloadTest extends TestCase
 
         $this->assertSame('https://app.test/orders/42', $payload['url']);
     }
+
+    public function test_class_is_sent(): void
+    {
+        $payload = BugPayload::fromThrowable(new RuntimeException('x'), null);
+
+        $this->assertSame(RuntimeException::class, $payload['class']);
+        $this->assertSame([], $payload['previous']);
+    }
+
+    public function test_previous_chain_is_capped_at_five(): void
+    {
+        $e = new RuntimeException('cause 0');
+        for ($i = 1; $i < 7; $i++) {
+            $e = new RuntimeException("cause $i", 0, $e);
+        }
+        $direct = $e->getPrevious();
+
+        $payload = BugPayload::fromThrowable($e, null);
+
+        $this->assertCount(5, $payload['previous']);
+        $this->assertSame($direct->getMessage(), $payload['previous'][0]['message']);
+        $this->assertSame(RuntimeException::class, $payload['previous'][0]['class']);
+    }
+
+    public function test_paths_are_made_relative_to_base_path(): void
+    {
+        $base = dirname(__DIR__, 2);
+        $payload = BugPayload::fromThrowable(new RuntimeException('x', 0, new RuntimeException('y')), null, 50, false, [], $base);
+
+        $this->assertSame('tests/Unit/BugPayloadTest.php', $payload['file']);
+        $this->assertSame('tests/Unit/BugPayloadTest.php', $payload['previous'][0]['file']);
+        foreach ($payload['stackTrace'] as $frame) {
+            $this->assertFalse(str_starts_with((string) $frame['file'], $base));
+        }
+    }
+
+    public function test_paths_outside_base_path_stay_absolute(): void
+    {
+        $payload = BugPayload::fromThrowable(new RuntimeException('x'), null, 50, false, [], '/nonexistent');
+
+        $this->assertSame(__FILE__, $payload['file']);
+    }
+
+    public function test_truncation_never_cuts_a_multibyte_character(): void
+    {
+        $long = 'a'.str_repeat('é', 600);
+        $e = new RuntimeException($long, 0, new RuntimeException($long));
+
+        $payload = BugPayload::fromThrowable($e, null);
+
+        $this->assertTrue(mb_check_encoding($payload['message'], 'UTF-8'));
+        $this->assertTrue(mb_check_encoding($payload['previous'][0]['message'], 'UTF-8'));
+        json_encode($payload, JSON_THROW_ON_ERROR);
+    }
+
+    public function test_anonymous_class_name_is_cut_at_the_nul_byte(): void
+    {
+        $e = new class('x', 0, new class('y') extends RuntimeException {}) extends RuntimeException {};
+
+        $payload = BugPayload::fromThrowable($e, null);
+
+        $this->assertSame('RuntimeException@anonymous', $payload['class']);
+        $this->assertSame('RuntimeException@anonymous', $payload['previous'][0]['class']);
+        $this->assertStringNotContainsString("\0", $payload['class'].$payload['previous'][0]['class']);
+    }
 }

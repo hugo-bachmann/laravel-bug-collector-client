@@ -32,6 +32,8 @@ BUG_COLLECTOR_INGEST_KEY="<clé générée dans le panneau Bug Collector>"
 
 Le ServiceProvider est auto-découvert — rien à enregistrer à la main.
 
+Vérifiez ensuite la configuration avec `php artisan bug-collector:test` : la commande diagnostique la config (raison exacte si le client est désactivé), envoie une exception de test directement au collecteur et retourne le code 0 (succès) ou 1 (échec).
+
 ## Configuration
 
 ```bash
@@ -70,6 +72,9 @@ Pour masquer des noms supplémentaires (cookies d'auth/JWT custom), listez-les e
 - **HTTPS requis.** `BUG_COLLECTOR_URL` doit être en `https://` (sauf `localhost`/`127.0.0.1` en dev). Sinon le client se **désactive automatiquement** pour ne jamais transmettre la clé d'ingestion ni les données en clair.
 - **Paramètres d'URL sensibles masqués.** Les valeurs des paramètres de query courants (`token`, `signature`, `password`, `secret`, `api_key`, `code`, `otp`…) sont remplacées par `[REDACTED]` avant l'envoi.
 - **Args de stack trace exclus** : seuls fichier / ligne / fonction / classe sont remontés.
+- **Chemins relatifs.** Les chemins de fichiers (`file`, `previous[*].file`, `stackTrace[*].file`) sont relatifs à la racine du projet : le chemin du serveur n'est pas divulgué.
+- **Chaîne `previous` sans arguments.** Les exceptions précédentes (5 maillons max) ne remontent que classe, message, fichier et ligne — jamais d'arguments.
+- **Contexte des requêtes SQL lentes.** `origin` (job, `METHOD route-uri` ou nom de la commande artisan) et `caller` (fichier relatif:ligne) n'incluent jamais les bindings ni l'argv complet.
 - **Attention aux messages d'exception et au SQL brut.** Le message d'exception (`getMessage()`) et le label des requêtes lentes sont envoyés **verbatim**. Les requêtes Eloquent gardent leurs placeholders (`?`), mais le SQL brut (`whereRaw`, `DB::raw`) et les messages d'exception peuvent contenir des littéraux sensibles — évitez d'y placer des secrets.
 - **Latence.** L'envoi est synchrone au `terminate` (après la réponse / la commande), borné par `BUG_COLLECTOR_TIMEOUT` (2 s par défaut) ; toute erreur réseau est avalée.
 

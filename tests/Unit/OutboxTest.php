@@ -30,9 +30,11 @@ class OutboxTest extends TestCase
         {
             public function __construct(public array &$sent) {}
 
-            public function send(string $path, array $payload): void
+            public function send(string $path, array $payload): bool
             {
                 $this->sent[] = [$path, $payload];
+
+                return true;
             }
         };
 
@@ -93,9 +95,11 @@ class OutboxTest extends TestCase
         {
             public function __construct(public array &$sent) {}
 
-            public function send(string $path, array $payload): void
+            public function send(string $path, array $payload): bool
             {
                 $this->sent[] = [$path, $payload];
+
+                return true;
             }
         };
 
@@ -105,5 +109,31 @@ class OutboxTest extends TestCase
         // Après flush, la même entrée doit être acceptée à nouveau.
         $outbox->record('/errors', ['message' => 'Oops', 'file' => '/app/Bar.php', 'line' => 7]);
         $this->assertCount(1, $outbox->pending());
+    }
+
+    public function test_flush_stops_after_first_failed_send(): void
+    {
+        $outbox = new Outbox;
+        $outbox->record('/a', ['a' => 1]);
+        $outbox->record('/b', ['b' => 2]);
+        $outbox->record('/c', ['c' => 3]);
+
+        $calls = 0;
+        $transport = new class($calls) implements Transport
+        {
+            public function __construct(public int &$calls) {}
+
+            public function send(string $path, array $payload): bool
+            {
+                $this->calls++;
+
+                return false;
+            }
+        };
+
+        $outbox->flush($transport);
+
+        $this->assertSame(1, $calls);
+        $this->assertTrue($outbox->isEmpty());
     }
 }

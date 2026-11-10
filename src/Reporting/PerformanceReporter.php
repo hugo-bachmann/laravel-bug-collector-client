@@ -5,6 +5,7 @@ namespace BugCollector\Client\Reporting;
 use BugCollector\Client\Outbox;
 use BugCollector\Client\Payloads\PerfPayload;
 use BugCollector\Client\Support\Gate;
+use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Throwable;
 
@@ -30,9 +31,9 @@ class PerformanceReporter
     ) {}
 
     /**
-     * @param  array<string, mixed>|null  $context
+     * @param  array<string, mixed>|Closure|null  $context  Une Closure n'est évaluée qu'au-delà du seuil.
      */
-    public function report(string $kind, string $label, int $durationMs, ?array $context = null): void
+    public function report(string $kind, string $label, int $durationMs, array|Closure|null $context = null): void
     {
         try {
             if (! $this->gate->shouldReportPerformance()) {
@@ -48,6 +49,10 @@ class PerformanceReporter
 
             if ($durationMs < $threshold) {
                 return;
+            }
+
+            if ($context instanceof Closure) {
+                $context = $context();
             }
 
             $this->outbox->record(

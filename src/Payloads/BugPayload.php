@@ -20,6 +20,7 @@ class BugPayload
         int $traceDepth = 50,
         bool $includeCookies = false,
         array $redactCookieNames = [],
+        string $basePath = '',
     ): array {
         $message = substr($e->getMessage(), 0, 1000);
 
@@ -32,9 +33,11 @@ class BugPayload
         return [
             'message' => $message !== '' ? $message : $e::class,
             'type' => $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500,
-            'file' => substr($e->getFile(), 0, 1000),
+            'class' => substr($e::class, 0, 255),
+            'previous' => self::previousChain($e, $basePath),
+            'file' => substr(self::relativePath($e->getFile(), $basePath), 0, 1000),
             'line' => $e->getLine(),
-            'stackTrace' => self::trace($e, $traceDepth),
+            'stackTrace' => self::trace($e, $traceDepth, $basePath),
             'url' => $request ? substr(self::redactUrl($request->fullUrl()), 0, 2000) : 'console',
             'ip' => ($request?->ip()) ?: '127.0.0.1',
             'userAgent' => ($ua = $request?->userAgent()) !== null ? substr($ua, 0, 1000) : null,
@@ -127,18 +130,51 @@ class BugPayload
         return $scheme.$host.$port.$path.'?'.$rebuilt.$fragment;
     }
 
+    /** Rend $path relatif à $basePath s'il en dépend, sinon le retourne tel quel. */
+    public static function relativePath(string $path, string $basePath): string
+    {
+        $prefix = rtrim($basePath, '/').'/';
+
+        if ($basePath === '' || ! str_starts_with($path, $prefix)) {
+            return $path;
+        }
+
+        return substr($path, strlen($prefix));
+    }
+
+    /**
+     * Chaîne des causes (getPrevious), plafonnée à 5 maillons (borne aussi les cycles).
+     *
+     * @return list<array{class: string, message: string, file: string, line: int}>
+     */
+    private static function previousChain(Throwable $e, string $basePath): array
+    {
+        $chain = [];
+
+        for ($p = $e->getPrevious(); $p !== null && count($chain) < 5; $p = $p->getPrevious()) {
+            $chain[] = [
+                'class' => substr($p::class, 0, 255),
+                'message' => substr($p->getMessage(), 0, 1000),
+                'file' => substr(self::relativePath($p->getFile(), $basePath), 0, 1000),
+                'line' => $p->getLine(),
+            ];
+        }
+
+        return $chain;
+    }
+
     /**
      * Frames file/line/function/class uniquement — les args sont volontairement
      * exclus (volume + données sensibles).
      *
      * @return array<int, array<string, mixed>>
      */
-    private static function trace(Throwable $e, int $depth): array
+    private static function trace(Throwable $e, int $depth, string $basePath): array
     {
         $frames = array_slice($e->getTrace(), 0, max(0, $depth));
 
         return array_map(static fn (array $frame): array => [
-            'file' => $frame['file'] ?? null,
+            'file' => isset($frame['file']) ? self::relativePath($frame['file'], $basePath) : null,
             'line' => $frame['line'] ?? null,
             'function' => $frame['function'] ?? null,
             'class' => $frame['class'] ?? null,

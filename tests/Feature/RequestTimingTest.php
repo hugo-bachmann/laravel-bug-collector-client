@@ -60,4 +60,29 @@ class RequestTimingTest extends TestCase
 
         Http::assertNotSent(fn ($request) => str_contains($request->url(), 'laravel-perf'));
     }
+
+    public function test_duration_starts_at_request_time_float(): void
+    {
+        config(['bug-collector.performance.thresholds.request' => 1000]);
+        Http::fake();
+
+        Route::get('/fast', fn () => 'ok');
+
+        $this->call('GET', '/fast', server: ['REQUEST_TIME_FLOAT' => microtime(true) - 5])->assertOk();
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'laravel-perf')
+            && $request['duration_ms'] >= 5000);
+    }
+
+    public function test_stale_request_time_float_falls_back_to_middleware_start(): void
+    {
+        config(['bug-collector.performance.thresholds.request' => 1000]);
+        Http::fake();
+
+        Route::get('/fast', fn () => 'ok');
+
+        $this->call('GET', '/fast', server: ['REQUEST_TIME_FLOAT' => microtime(true) - 7200])->assertOk();
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'laravel-perf'));
+    }
 }
